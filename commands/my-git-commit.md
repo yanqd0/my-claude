@@ -1,3 +1,8 @@
+---
+allowed-tools: Bash(git:*)
+description: 暂存并提交当前修改，生成规范的中文提交信息。
+---
+
 根据当前对话上下文中涉及的修改，执行 git commit。
 
 ## 执行步骤

@@ -1,3 +1,8 @@
+---
+allowed-tools: Bash(git:*)
+description: 将当前修改合并到上一次提交，并同步更新提交信息。
+---
+
 与 `my-git-commit` 流程相同，差异仅在第 4 步：执行 `git commit --amend` 将修改合并到上一次提交，而非新建提交。
 
 ## 执行步骤（的差异）
