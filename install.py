@@ -76,6 +76,28 @@ def _validate(src_dir, dst_dir):
     return passed, failed
 
 
+def _revert(src_dir, dst_dir):
+    """Remove symlinks that point to src_dir or are broken. Return count removed."""
+    if not dst_dir.is_dir():
+        print(f"Commands directory not found: {dst_dir}")
+        return 0
+
+    removed = 0
+    for f in sorted(dst_dir.iterdir()):
+        if f.is_symlink():
+            target = os.readlink(f)
+            if str(src_dir) in target or not f.exists():
+                print(f"  remove: {f.name}")
+                f.unlink()
+                removed += 1
+            else:
+                print(f"  skip  : {f.name} (elsewhere)")
+        else:
+            print(f"  skip  : {f.name} (file)")
+
+    return removed
+
+
 def _run_test(src_dir):
     root = Path("/tmp/my-claude")
     dst_dir = root / "commands"
@@ -99,18 +121,23 @@ def _run_test(src_dir):
 def main():
     """Symlink commands/*.md into root/commands/."""
     parser = argparse.ArgumentParser(description=main.__doc__)
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
+    parser.add_argument(
         "--root",
         "-r",
         default="~/.claude",
         help="target root directory (default: ~/.claude)",
     )
-    group.add_argument(
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument(
         "--test",
         "-t",
         action="store_true",
         help="install to /tmp/my-claude/, validate, then clean up",
+    )
+    action.add_argument(
+        "--revert",
+        action="store_true",
+        help="remove symlinks pointing to this repo, and broken symlinks",
     )
     args = parser.parse_args()
 
@@ -119,12 +146,15 @@ def main():
         print(f"Source directory not found: {src_dir}", file=sys.stderr)
         sys.exit(1)
 
+    root = Path(args.root).expanduser()
+    dst_dir = root / "commands"
+
     if args.test:
         _run_test(src_dir)
+    elif args.revert:
+        removed = _revert(src_dir, dst_dir)
+        print(f"\nDone. {removed} symlinks removed.")
     else:
-        root = Path(args.root).expanduser()
-        dst_dir = root / "commands"
-
         installed = install_commands(src_dir, dst_dir)
         print(f"\nDone. {installed} commands installed.")
 
