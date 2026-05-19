@@ -9,8 +9,7 @@
 - 新增`/my-git-push`命令：推送本地提交，失败时分析原因。
 - 新增`/my-git-pull`命令：拉取远程代码，复杂合并自动回退。
 - 新增`/my-git-tag`命令：语义化版本管理，自动生成改动摘要并同步`CHANGELOG.md`。
-- install.py 安装脚本：支持安装、测试、卸载。
-- YAML frontmatter 权限控制：`allowed-tools` 限定最小权限
+- 新增`install.py`安装脚本：支持安装、测试、卸载。
 
 ### Bug Fixes
 
