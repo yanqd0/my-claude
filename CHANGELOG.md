@@ -12,8 +12,6 @@
 - 新增`/my-new-command`命令：根据描述创建新命令文件，自动学习既有模式生成。
 - 新增`install.py`安装脚本：支持安装、测试、卸载。
 
-### Bug Fixes
-
 ### Others
 
 - Initial commit.
