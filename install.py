@@ -2,6 +2,7 @@
 """Install this project's commands to Claude Code."""
 
 import argparse
+import json
 import os
 import shutil
 import sys
@@ -35,6 +36,150 @@ def install_commands(src_dir, dst_dir):
         installed += 1
 
     return installed
+
+
+# ── settings ───────────────────────────────────────────────────────────
+
+
+def _deep_merge(base, overlay):
+    """Merge overlay into base. Skip existing non-dict keys."""
+    for key, value in overlay.items():
+        if key in base:
+            if isinstance(base[key], dict) and isinstance(value, dict):
+                _deep_merge(base[key], value)
+        else:
+            base[key] = value
+
+
+def _deep_revert(base, overlay):
+    """Remove keys from base where values match overlay (recursing into dicts)."""
+    for key, value in overlay.items():
+        if key not in base:
+            continue
+        if isinstance(base[key], dict) and isinstance(value, dict):
+            _deep_revert(base[key], value)
+            if not base[key]:
+                del base[key]
+        elif base[key] == value:
+            del base[key]
+
+
+def install_settings(settings_dir, dst_path):
+    """Merge settings/*.json into dst_path. Skip _prefixed files."""
+    dst_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if dst_path.exists():
+        base = json.loads(dst_path.read_text())
+    else:
+        base = {}
+
+    installed = 0
+    for src in sorted(settings_dir.glob("*.json")):
+        if src.name.startswith("_"):
+            print(f"  skip   : {src.name} (internal)")
+            continue
+
+        overlay = json.loads(src.read_text())
+
+        before = json.dumps(base, sort_keys=True, ensure_ascii=False)
+        _deep_merge(base, overlay)
+        after = json.dumps(base, sort_keys=True, ensure_ascii=False)
+
+        if before != after:
+            print(f"  install: {src.name}")
+            installed += 1
+        else:
+            print(f"  skip   : {src.name} (up to date)")
+
+    dst_path.write_text(json.dumps(base, indent=2, ensure_ascii=False) + "\n")
+    return installed
+
+
+def _revert_settings(settings_dir, dst_path):
+    """Remove matching keys from dst_path per settings/*.json. Skip _prefixed."""
+    if not dst_path.exists():
+        print(f"Settings file not found: {dst_path}")
+        return 0
+
+    base = json.loads(dst_path.read_text())
+
+    reverted = 0
+    for src in sorted(settings_dir.glob("*.json")):
+        if src.name.startswith("_"):
+            print(f"  skip   : {src.name} (internal)")
+            continue
+
+        overlay = json.loads(src.read_text())
+
+        before = json.dumps(base, sort_keys=True, ensure_ascii=False)
+        _deep_revert(base, overlay)
+        after = json.dumps(base, sort_keys=True, ensure_ascii=False)
+
+        if before != after:
+            print(f"  revert : {src.name}")
+            reverted += 1
+        else:
+            print(f"  skip   : {src.name} (no match)")
+
+    dst_path.write_text(json.dumps(base, indent=2, ensure_ascii=False) + "\n")
+    return reverted
+
+
+def _verify_settings(settings_dir, settings_path):
+    """Verify merged settings.json contains all source keys with correct values."""
+    if not settings_dir.is_dir():
+        return 0, 0
+
+    if not settings_path.exists():
+        print("  ✗ settings.json (missing)")
+        return 0, 1
+
+    merged = json.loads(settings_path.read_text())
+    passed = 0
+    failed = 0
+
+    for src in sorted(settings_dir.glob("*.json")):
+        if src.name.startswith("_"):
+            continue
+
+        source = json.loads(src.read_text())
+        for key, value in source.items():
+            p, f = _deep_check(merged, key, value)
+            passed += p
+            failed += f
+
+    return passed, failed
+
+
+def _deep_check(merged, key, source_value, path=None):
+    """Recursively check merged[key] contains source_value. Returns (passed, failed)."""
+    if path is None:
+        path = key
+    else:
+        path = f"{path}.{key}"
+
+    if key not in merged:
+        print(f"  ✗ {path} (missing)")
+        return 0, 1
+
+    merged_val = merged[key]
+    if isinstance(source_value, dict) and isinstance(merged_val, dict):
+        p, f = 0, 0
+        for k, v in source_value.items():
+            dp, df = _deep_check(merged_val, k, v, path)
+            p += dp
+            f += df
+        return p, f
+
+    if merged_val == source_value:
+        print(f"  ✓ {path}")
+        return 1, 0
+
+    print(f"  ✗ {path} (mismatch)")
+    return 0, 1
+
+
+# ── commands validation ────────────────────────────────────────────────
 
 
 def _validate(src_dir, dst_dir):
@@ -76,7 +221,7 @@ def _validate(src_dir, dst_dir):
     return passed, failed
 
 
-def _revert(src_dir, dst_dir):
+def _revert_commands(src_dir, dst_dir):
     """Remove symlinks that point to src_dir or are broken. Return count removed."""
     if not dst_dir.is_dir():
         print(f"Commands directory not found: {dst_dir}")
@@ -98,7 +243,7 @@ def _revert(src_dir, dst_dir):
     return removed
 
 
-def _run_test(src_dir):
+def _run_test(src_dir, settings_dir):
     root = Path("/tmp/my-claude")
     dst_dir = root / "commands"
 
@@ -109,6 +254,21 @@ def _run_test(src_dir):
 
     print("=== Validation ===")
     passed, failed = _validate(src_dir, dst_dir)
+
+    if settings_dir.is_dir():
+        print("\n=== Settings install test ===")
+        settings_path = root / "settings.json"
+        installed_s = install_settings(settings_dir, settings_path)
+        print(f"\n{installed_s} settings installed.\n")
+
+        print("=== Settings verify ===")
+        vp, vf = _verify_settings(settings_dir, settings_path)
+        if vf > 0:
+            failed += vf
+
+        print("\n=== Settings revert test ===")
+        reverted_s = _revert_settings(settings_dir, settings_path)
+        print(f"\n{reverted_s} settings reverted.")
 
     print(f"\nClean up {root} ...")
     shutil.rmtree(root)
@@ -148,15 +308,27 @@ def main():
 
     root = Path(args.root).expanduser()
     dst_dir = root / "commands"
+    settings_dir = Path(__file__).resolve().parent / "settings"
+    settings_path = root / "settings.json"
 
     if args.test:
-        _run_test(src_dir)
+        _run_test(src_dir, settings_dir)
     elif args.revert:
-        removed = _revert(src_dir, dst_dir)
+        removed = _revert_commands(src_dir, dst_dir)
         print(f"\nDone. {removed} symlinks removed.")
+
+        if settings_dir.is_dir():
+            print("\n=== Settings ===")
+            reverted_s = _revert_settings(settings_dir, settings_path)
+            print(f"\nDone. {reverted_s} settings reverted.")
     else:
         installed = install_commands(src_dir, dst_dir)
         print(f"\nDone. {installed} commands installed.")
+
+        if settings_dir.is_dir():
+            print("\n=== Settings ===")
+            installed_s = install_settings(settings_dir, settings_path)
+            print(f"\nDone. {installed_s} settings installed.")
 
 
 if __name__ == "__main__":
