@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.1.1
+
+### Features
+
+- tag message 首行增加概括性大版本标题（≤50 字符），便于 `git tag -ln` 显示。
+
+### Bug Fixes
+
+- 修复从 CHANGELOG.md 搬运内容至 tag message 时，丢失 `## Features` 等分类标题的问题。
+
 ## 0.1.0
 
 ### Features
