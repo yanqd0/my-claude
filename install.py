@@ -41,12 +41,19 @@ def install_commands(src_dir, dst_dir):
 # ── settings ───────────────────────────────────────────────────────────
 
 
-def _deep_merge(base, overlay):
-    """Merge overlay into base. Skip existing non-dict keys."""
+def _deep_merge(base, overlay, force=False):
+    """Merge overlay into base. Skip existing non-dict keys unless force=True.
+
+    ANTHROPIC_AUTH_TOKEN is never overwritten, regardless of force.
+    """
     for key, value in overlay.items():
+        if key == "ANTHROPIC_AUTH_TOKEN":
+            continue
         if key in base:
             if isinstance(base[key], dict) and isinstance(value, dict):
-                _deep_merge(base[key], value)
+                _deep_merge(base[key], value, force)
+            elif force:
+                base[key] = value
         else:
             base[key] = value
 
@@ -64,8 +71,15 @@ def _deep_revert(base, overlay):
             del base[key]
 
 
-def install_settings(settings_dir, dst_path):
-    """Merge settings/*.json into dst_path. Skip _prefixed files."""
+def install_settings(settings_dir, dst_path, forced=None):
+    """Merge settings/*.json into dst_path.
+
+    When forced is non-empty, only those files are processed (force=True).
+    Otherwise all non-_-prefixed files in settings_dir are merged normally.
+    """
+    if forced is None:
+        forced = set()
+
     dst_path.parent.mkdir(parents=True, exist_ok=True)
 
     if dst_path.exists():
@@ -74,19 +88,28 @@ def install_settings(settings_dir, dst_path):
         base = {}
 
     installed = 0
-    for src in sorted(settings_dir.glob("*.json")):
-        if src.name.startswith("_"):
-            print(f"  skip   : {src.name} (internal)")
-            continue
+
+    if forced:
+        sources = [Path(p) for p in sorted(forced)]
+    else:
+        sources = sorted(settings_dir.glob("*.json"))
+
+    for src in sources:
+        if not forced:
+            if src.name.startswith("_"):
+                print(f"  skip   : {src.name} (internal)")
+                continue
 
         overlay = json.loads(src.read_text())
+        is_forced = bool(forced)
 
         before = json.dumps(base, sort_keys=True, ensure_ascii=False)
-        _deep_merge(base, overlay)
+        _deep_merge(base, overlay, force=is_forced)
         after = json.dumps(base, sort_keys=True, ensure_ascii=False)
 
         if before != after:
-            print(f"  install: {src.name}")
+            tag = "force" if is_forced else "install"
+            print(f"  {tag}: {src.name}")
             installed += 1
         else:
             print(f"  skip   : {src.name} (up to date)")
@@ -287,6 +310,14 @@ def main():
         default="~/.claude",
         help="target root directory (default: ~/.claude)",
     )
+    parser.add_argument(
+        "--settings",
+        "-s",
+        action="append",
+        default=None,
+        metavar="FILE",
+        help="force-install a settings JSON file (repeatable)",
+    )
     action = parser.add_mutually_exclusive_group()
     action.add_argument(
         "--test",
@@ -322,12 +353,22 @@ def main():
             reverted_s = _revert_settings(settings_dir, settings_path)
             print(f"\nDone. {reverted_s} settings reverted.")
     else:
+        # resolve --settings paths to absolute paths for forced merge
+        forced = set()
+        if args.settings:
+            for path_str in args.settings:
+                p = Path(path_str).resolve()
+                if not p.is_file():
+                    print(f"Settings file not found: {p}", file=sys.stderr)
+                    sys.exit(1)
+                forced.add(str(p))
+
         installed = install_commands(src_dir, dst_dir)
         print(f"\nDone. {installed} commands installed.")
 
         if settings_dir.is_dir():
             print("\n=== Settings ===")
-            installed_s = install_settings(settings_dir, settings_path)
+            installed_s = install_settings(settings_dir, settings_path, forced)
             print(f"\nDone. {installed_s} settings installed.")
 
 
