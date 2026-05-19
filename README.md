@@ -15,7 +15,7 @@ Claude Code 自定义命令集，提供规范的 git 操作流程。
 ## 安装
 
 ```sh
-python3 install.py
+./install.py
 ```
 
 将 `commands/*.md` 软链接到 `~/.claude/commands/`，Claude Code 即可识别。
@@ -23,7 +23,7 @@ python3 install.py
 ## 卸载
 
 ```sh
-python3 install.py --revert
+./install.py --revert
 ```
 
 删除指向本仓库的软链接和失效链接，不影响实际文件。
@@ -31,6 +31,6 @@ python3 install.py --revert
 ## 其他选项
 
 ```sh
-python3 install.py --root /custom/path    # 自定义目标根目录
-python3 install.py --test                 # 安装到 /tmp 并校验，测试后自动清理
+./install.py --root /custom/path    # 自定义目标根目录
+./install.py --test                 # 安装到 /tmp 并校验，测试后自动清理
 ```
