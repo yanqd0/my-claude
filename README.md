@@ -11,6 +11,7 @@ Claude Code 自定义命令集，提供规范的 git 操作流程。
 | `my-git-push` | 推送本地提交，失败时分析原因 |
 | `my-git-pull` | 拉取远程代码，复杂合并自动回退并展示差异 |
 | `my-git-tag` | 打语义化版本 tag，自动归类 commit 生成改动摘要 |
+| `my-mermaid` | 生成色彩合理、分组清晰的 mermaid 图，支持自动推测图类型和上下文分析 |
 
 ## 安装
 
