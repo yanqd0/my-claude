@@ -13,6 +13,7 @@ Claude Code 自定义命令集，提供规范的 git 操作流程。
 | `my-git-tag` | 打语义化版本 tag，自动归类 commit 生成改动摘要 |
 | `my-mermaid` | 生成色彩合理、分组清晰的 mermaid 图，支持自动推测图类型和上下文分析 |
 | `my-code-io` | 基于代码生成中文技术介绍文，含图表和多章节，面向非专业读者 |
+| `my-new-hook` | 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目中输出到 hooks/ 目录 |
 
 ## 安装
 
