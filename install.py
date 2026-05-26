@@ -148,6 +148,160 @@ def _revert_settings(settings_dir, dst_path):
     return reverted
 
 
+# ── hooks ──────────────────────────────────────────────────────────────
+
+
+def install_hooks(hooks_dir, settings_path, hooks_dst, forced=None):
+    """Install hooks: merge JSON into settings.json, symlink scripts to hooks_dst.
+
+    When forced is non-empty (set of JSON file paths), only those hooks are
+    processed with force=True.
+
+    Return (json_installed, scripts_installed).
+    """
+    if not hooks_dir.is_dir():
+        return 0, 0
+
+    if forced is None:
+        forced = set()
+
+    # --- JSON → settings.json ---
+    json_installed = 0
+
+    if settings_path.exists():
+        base = json.loads(settings_path.read_text())
+    else:
+        base = {}
+
+    if forced:
+        json_sources = [Path(p) for p in sorted(forced)]
+        json_sources = [s for s in json_sources if s.suffix == ".json"]
+    else:
+        json_sources = sorted(hooks_dir.glob("*.json"))
+        json_sources = [s for s in json_sources if not s.name.startswith("_")]
+
+    for src in json_sources:
+        if not src.is_file():
+            print(f"  skip   : {src.name} (hooks, not found)")
+            continue
+        overlay = json.loads(src.read_text())
+        is_forced = bool(forced)
+
+        before = json.dumps(base, sort_keys=True, ensure_ascii=False)
+        _deep_merge(base, overlay, force=is_forced)
+        after = json.dumps(base, sort_keys=True, ensure_ascii=False)
+
+        if before != after:
+            tag = "force" if is_forced else "install"
+            print(f"  {tag}: {src.name} (hooks)")
+            json_installed += 1
+        else:
+            print(f"  skip   : {src.name} (hooks, up to date)")
+
+    if json_installed > 0:
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(json.dumps(base, indent=2, ensure_ascii=False) + "\n")
+
+    # --- Scripts → symlink to hooks_dst ---
+    scripts_installed = 0
+    hooks_dst.mkdir(parents=True, exist_ok=True)
+
+    if forced:
+        script_sources = []
+        for f_path in forced:
+            name = Path(f_path).stem
+            for script in hooks_dir.glob(f"{name}.*"):
+                if script.suffix != ".json" and not script.name.startswith("_"):
+                    script_sources.append(script)
+        script_sources = sorted(set(script_sources))
+    else:
+        script_sources = sorted(hooks_dir.glob("*"))
+        script_sources = [
+            s for s in script_sources
+            if s.suffix != ".json" and not s.name.startswith("_") and not s.name.startswith(".")
+        ]
+
+    for src in script_sources:
+        dst = hooks_dst / src.name
+        if dst.is_symlink():
+            if os.readlink(dst) == str(src):
+                print(f"  skip   : {dst.name} (hooks, correct)")
+                continue
+            print(f"  fix    : {dst.name} (hooks) -> {src}")
+            dst.unlink()
+        elif dst.exists():
+            print(f"  skip   : {dst.name} (hooks, existing file)")
+            continue
+        else:
+            print(f"  install: {dst.name} (hooks)")
+
+        dst.symlink_to(src)
+        scripts_installed += 1
+
+    return json_installed, scripts_installed
+
+
+def _revert_hooks(hooks_dir, settings_path, hooks_dst, forced=None):
+    """Revert hooks: remove JSON keys from settings.json, remove script symlinks.
+
+    When forced is non-empty, only revert the specified hooks.
+    Return (json_reverted, scripts_removed).
+    """
+    json_reverted = 0
+    scripts_removed = 0
+
+    # --- JSON revert ---
+    if hooks_dir.is_dir() and settings_path.exists():
+        base = json.loads(settings_path.read_text())
+
+        if forced is not None:
+            json_sources = [Path(p) for p in sorted(forced)]
+            json_sources = [s for s in json_sources if s.suffix == ".json"]
+        else:
+            json_sources = sorted(hooks_dir.glob("*.json"))
+            json_sources = [s for s in json_sources if not s.name.startswith("_")]
+
+        for src in json_sources:
+            if not src.is_file():
+                continue
+            overlay = json.loads(src.read_text())
+
+            before = json.dumps(base, sort_keys=True, ensure_ascii=False)
+            _deep_revert(base, overlay)
+            after = json.dumps(base, sort_keys=True, ensure_ascii=False)
+
+            if before != after:
+                print(f"  revert : {src.name} (hooks)")
+                json_reverted += 1
+            else:
+                print(f"  skip   : {src.name} (hooks, no match)")
+
+        if json_reverted > 0:
+            settings_path.write_text(json.dumps(base, indent=2, ensure_ascii=False) + "\n")
+
+    # --- Script revert ---
+    if hooks_dst.is_dir():
+        hook_names = None
+        if forced is not None:
+            hook_names = {Path(p).stem for p in forced}
+
+        for f in sorted(hooks_dst.iterdir()):
+            if f.is_symlink():
+                target = os.readlink(f)
+                if str(hooks_dir) in target:
+                    if hook_names is not None and f.stem not in hook_names:
+                        continue
+                    print(f"  remove: {f.name} (hooks)")
+                    f.unlink()
+                    scripts_removed += 1
+                else:
+                    print(f"  skip  : {f.name} (hooks, elsewhere)")
+            else:
+                print(f"  skip  : {f.name} (hooks, file)")
+
+    return json_reverted, scripts_removed
+
+
 def _verify_settings(settings_dir, settings_path):
     """Verify merged settings.json contains all source keys with correct values."""
     if not settings_dir.is_dir():
@@ -266,7 +420,7 @@ def _revert_commands(src_dir, dst_dir):
     return removed
 
 
-def _run_test(src_dir, settings_dir):
+def _run_test(src_dir, settings_dir, hooks_dir):
     root = Path("/tmp/my-claude")
     dst_dir = root / "commands"
 
@@ -293,6 +447,30 @@ def _run_test(src_dir, settings_dir):
         reverted_s = _revert_settings(settings_dir, settings_path)
         print(f"\n{reverted_s} settings reverted.")
 
+    if hooks_dir.is_dir():
+        print("\n=== Hooks install test ===")
+        settings_path = root / "settings.json"
+        hooks_dst = root / "hooks"
+        j, s = install_hooks(hooks_dir, settings_path, hooks_dst)
+        print(f"\n{j} hook settings, {s} hook scripts installed.\n")
+
+        print("=== Hooks verify ===")
+        vp, vf = _verify_settings(hooks_dir, settings_path)
+        if vf > 0:
+            failed += vf
+
+        if hooks_dst.is_dir():
+            for f in sorted(hooks_dst.iterdir()):
+                if f.is_symlink():
+                    print(f"  ✓ {f.name}")
+                else:
+                    print(f"  ✗ {f.name} (not a symlink)")
+                    failed += 1
+
+        print("\n=== Hooks revert test ===")
+        j, s = _revert_hooks(hooks_dir, settings_path, hooks_dst)
+        print(f"\n{j} hook settings, {s} hook scripts reverted.")
+
     print(f"\nClean up {root} ...")
     shutil.rmtree(root)
 
@@ -318,6 +496,13 @@ def main():
         metavar="FILE",
         help="force-install a settings JSON file (repeatable)",
     )
+    parser.add_argument(
+        "--hooks",
+        action="append",
+        default=None,
+        metavar="FILE",
+        help="force-install a hook JSON file and its script (repeatable)",
+    )
     action = parser.add_mutually_exclusive_group()
     action.add_argument(
         "--test",
@@ -341,9 +526,11 @@ def main():
     dst_dir = root / "commands"
     settings_dir = Path(__file__).resolve().parent / "settings"
     settings_path = root / "settings.json"
+    hooks_dir = Path(__file__).resolve().parent / "hooks"
+    hooks_dst = root / "hooks"
 
     if args.test:
-        _run_test(src_dir, settings_dir)
+        _run_test(src_dir, settings_dir, hooks_dir)
     elif args.revert:
         removed = _revert_commands(src_dir, dst_dir)
         print(f"\nDone. {removed} symlinks removed.")
@@ -352,6 +539,11 @@ def main():
             print("\n=== Settings ===")
             reverted_s = _revert_settings(settings_dir, settings_path)
             print(f"\nDone. {reverted_s} settings reverted.")
+
+        if hooks_dir.is_dir():
+            print("\n=== Hooks ===")
+            j, s = _revert_hooks(hooks_dir, settings_path, hooks_dst, args.hooks)
+            print(f"\nDone. {j} hook settings, {s} hook scripts reverted.")
     else:
         # resolve --settings paths to absolute paths for forced merge
         forced = set()
@@ -370,6 +562,11 @@ def main():
             print("\n=== Settings ===")
             installed_s = install_settings(settings_dir, settings_path, forced)
             print(f"\nDone. {installed_s} settings installed.")
+
+        if hooks_dir.is_dir():
+            print("\n=== Hooks ===")
+            j, s = install_hooks(hooks_dir, settings_path, hooks_dst, args.hooks)
+            print(f"\nDone. {j} hook settings, {s} hook scripts installed.")
 
 
 if __name__ == "__main__":
