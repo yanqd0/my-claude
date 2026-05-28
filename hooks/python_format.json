@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "afterToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "python3 ~/.claude/hooks/python_format.py"
+      }
+    ]
+  }
+}

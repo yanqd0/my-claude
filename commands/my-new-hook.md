@@ -51,3 +51,4 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
 - JSON 片段中的 `command` 字段：默认模式下用 `python3 ~/.claude/hooks/<name>.py`；项目模式下同样指向 `python3 ~/.claude/hooks/<name>.py`（因为 `install.py` 会将项目 `hooks/<name>.py` 软链接到 `~/.claude/hooks/<name>.py`，使用时脚本一定在该路径下）。
 - 脚本的 `matcher` 为空字符串时匹配所有触发，填写工具名或正则时仅匹配符合条件的。
 - 多个 hook 配置可合并写入同一个 event 数组。
+- hook 名称（`<name>`）使用小写字母、数字和下划线（`_`），不使用中划线（`-`）。与目标语言命名习惯保持一致（如 Python 用 `python_format` 而非 `python-format`）。

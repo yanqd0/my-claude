@@ -27,6 +27,10 @@ Claude Code 自定义命令与配置项目。
 
 `hooks/` 下可放置 hook 的 JSON 配置和脚本，安装时 JSON 合并到 settings.json，脚本软链接到 `~/.claude/hooks/`。
 
+| 文件 | 用途 |
+|------|------|
+| `python_format` | 对 Python 文件 Write/Edit 后自动执行 yapf 或 black 格式化 |
+
 ## 安装
 
 ```sh
