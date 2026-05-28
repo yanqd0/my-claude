@@ -330,6 +330,9 @@ def _verify_settings(settings_dir, settings_path):
 
 def _deep_check(merged, key, source_value, path=None):
     """Recursively check merged[key] contains source_value. Returns (passed, failed)."""
+    if key == "ANTHROPIC_AUTH_TOKEN":
+        return 0, 0
+
     if path is None:
         path = key
     else:

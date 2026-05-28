@@ -7,14 +7,6 @@
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro[1m]",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash[1m]",
     "ANTHROPIC_SMALL_FAST_MODEL": "deepseek-v4-flash",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "deepseek-v4-flash",
-    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "800000",
-    "CLAUDE_CODE_DISABLE_ERROR_REPORTING": "1",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "CLAUDE_CODE_DISABLE_TELEMETRY": "1",
-    "CLAUDE_CODE_EFFORT_LEVEL": "max",
-    "DISABLE_TELEMETRY": "1",
-    "DISABLE_BUG_COMMAND": "1"
-  },
-  "hasCompletedOnboarding": true
+    "CLAUDE_CODE_SUBAGENT_MODEL": "deepseek-v4-flash"
+  }
 }
