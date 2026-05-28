@@ -9,13 +9,25 @@ import sys
 def find_formatter():
     """Return the first available Python formatter command, or None."""
     for cmd in (["yapf", "-i"], ["black"]):
-        if subprocess.run(["which", cmd[0]],
-                          capture_output=True).returncode == 0:
+        proc = subprocess.run(
+            ["which", cmd[0]],
+            capture_output=True,
+            check=False,
+        )
+        if proc.returncode == 0:
             return cmd
     return None
 
 
 def main():
+    """PostToolUse hook：对 Write/Edit 的 Python 文件自动执行格式化。
+
+    1. 从 stdin 读取 hook 事件 JSON。
+    2. 过滤：仅处理工具名称为 Write 或 Edit 的事件。
+    3. 过滤：仅处理以 .py 结尾且实际存在的文件。
+    4. 查找可用格式化工具（yapf 优先，其次 black）。
+    5. 执行格式化，输出结果或错误信息到 stderr。
+    """
     event = json.load(sys.stdin)
     tool_name = event.get("tool_name", "")
 
@@ -44,6 +56,7 @@ def main():
         formatter + [file_path],
         capture_output=True,
         text=True,
+        check=False,
     )
     if result.returncode != 0:
         print(
