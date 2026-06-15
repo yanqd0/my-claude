@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install this project's commands to Claude Code."""
+"""Install this project's commands and skills to Claude Code."""
 
 import argparse
 import json
@@ -9,28 +9,32 @@ import sys
 from pathlib import Path
 
 
-def install_commands(src_dir, dst_dir):
+def _install_items(src_dir, dst_dir, label=""):
     """Symlink .md files from src_dir into dst_dir.
 
-    Return count of installed.
+    Return count of installed.  *label* is used in log lines.
     """
+    if not src_dir.is_dir():
+        return 0
+
     dst_dir.mkdir(parents=True, exist_ok=True)
     installed = 0
+    tag = f" ({label})" if label else ""
 
     for src in sorted(src_dir.glob("*.md")):
         dst = dst_dir / src.name
 
         if dst.is_symlink():
             if os.readlink(dst) == str(src):
-                print(f"  skip   : {dst.name} (correct)")
+                print(f"  skip   : {dst.name}{tag} (correct)")
                 continue
-            print(f"  fix    : {dst.name} -> {src}")
+            print(f"  fix    : {dst.name}{tag} -> {src}")
             dst.unlink()
         elif dst.exists():
-            print(f"  skip   : {dst.name} (existing file)")
+            print(f"  skip   : {dst.name}{tag} (existing file)")
             continue
         else:
-            print(f"  install: {dst.name}")
+            print(f"  install: {dst.name}{tag}")
 
         dst.symlink_to(src)
         installed += 1
@@ -38,10 +42,20 @@ def install_commands(src_dir, dst_dir):
     # Clean up broken symlinks (from deleted source files)
     for dst in sorted(dst_dir.iterdir()):
         if dst.is_symlink() and not dst.exists():
-            print(f"  cleanup: {dst.name} (broken link)")
+            print(f"  cleanup: {dst.name}{tag} (broken link)")
             dst.unlink()
 
     return installed
+
+
+def install_commands(src_dir, dst_dir):
+    """Symlink commands/*.md into ~/.claude/commands/."""
+    return _install_items(src_dir, dst_dir)
+
+
+def install_skills(src_dir, dst_dir):
+    """Symlink skills/*.md into ~/.claude/skills/."""
+    return _install_items(src_dir, dst_dir, label="skills")
 
 
 # ── settings ───────────────────────────────────────────────────────────
@@ -455,6 +469,10 @@ def _deep_check(merged, key, source_value, path=None, _parent_key=None):
 
 
 def _validate(src_dir, dst_dir):
+    """Validate symlinks: all src .md files must be correct in dst."""
+    if not src_dir.is_dir():
+        return 0, 0
+
     passed = 0
     failed = 0
     src_files = {f.name: f for f in src_dir.glob("*.md")}
@@ -493,42 +511,59 @@ def _validate(src_dir, dst_dir):
     return passed, failed
 
 
-def _revert_commands(src_dir, dst_dir):
-    """Remove symlinks pointing to src_dir from dst_dir.
+def _revert_items(src_dir, dst_dir, label=""):
+    """Remove symlinks pointing to *src_dir* from *dst_dir*.
 
-    Also removes broken symlinks. Return count removed.
+    Also removes broken symlinks.  Return count removed.
     """
     if not dst_dir.is_dir():
-        print(f"Commands directory not found: {dst_dir}")
         return 0
 
     removed = 0
+    tag = f" ({label})" if label else ""
+
     for f in sorted(dst_dir.iterdir()):
         if f.is_symlink():
             target = os.readlink(f)
             if str(src_dir) in target or not f.exists():
-                print(f"  remove: {f.name}")
+                print(f"  remove: {f.name}{tag}")
                 f.unlink()
                 removed += 1
             else:
-                print(f"  skip  : {f.name} (elsewhere)")
+                print(f"  skip  : {f.name}{tag} (elsewhere)")
         else:
-            print(f"  skip  : {f.name} (file)")
+            print(f"  skip  : {f.name}{tag} (file)")
 
     return removed
 
 
-def _run_test(src_dir, settings_dir, hooks_dir):
+def _revert_commands(src_dir, dst_dir):
+    """Remove command symlinks pointing to src_dir from dst_dir."""
+    return _revert_items(src_dir, dst_dir)
+
+
+def _revert_skills(src_dir, dst_dir):
+    """Remove skill symlinks pointing to src_dir from dst_dir."""
+    return _revert_items(src_dir, dst_dir, label="skills")
+
+
+def _run_test(src_dir, skills_dir, settings_dir, hooks_dir):
     root = Path("/tmp/my-claude")
     dst_dir = root / "commands"
+    skills_dst = root / "skills"
 
     print(f"=== Install test ({dst_dir}) ===\n")
 
     installed = install_commands(src_dir, dst_dir)
-    print(f"\nInstalled {installed} commands.\n")
+    installed_sk = install_skills(skills_dir, skills_dst)
+    print(f"\nInstalled {installed} commands, {installed_sk} skills.\n")
 
-    print("=== Validation ===")
+    print("=== Validation (commands) ===")
     passed, failed = _validate(src_dir, dst_dir)
+    print("\n=== Validation (skills) ===")
+    sp, sf = _validate(skills_dir, skills_dst)
+    passed += sp
+    failed += sf
 
     if settings_dir.is_dir():
         print("\n=== Settings install test ===")
@@ -650,18 +685,21 @@ def main():
 
     root = Path(args.root).expanduser()
     dst_dir = root / "commands"
+    skills_dir = Path(__file__).resolve().parent / "skills"
+    skills_dst = root / "skills"
     settings_dir = Path(__file__).resolve().parent / "settings"
     settings_path = root / "settings.json"
     hooks_dir = Path(__file__).resolve().parent / "hooks"
     hooks_dst = root / "hooks"
 
     if args.test:
-        _run_test(src_dir, settings_dir, hooks_dir)
+        _run_test(src_dir, skills_dir, settings_dir, hooks_dir)
     elif args.revert:
         if not args.settings and not args.hooks:
             # Full revert: everything
             removed = _revert_commands(src_dir, dst_dir)
-            print(f"\nDone. {removed} symlinks removed.")
+            removed_s = _revert_skills(skills_dir, skills_dst)
+            print(f"\nDone. {removed} commands, {removed_s} skills removed.")
 
             if settings_dir.is_dir():
                 print("\n=== Settings ===")
@@ -699,7 +737,8 @@ def main():
                 forced.add(str(p))
 
         installed = install_commands(src_dir, dst_dir)
-        print(f"\nDone. {installed} commands installed.")
+        installed_s = install_skills(skills_dir, skills_dst)
+        print(f"\nDone. {installed} commands, {installed_s} skills installed.")
 
         if settings_dir.is_dir():
             print("\n=== Settings ===")
