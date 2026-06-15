@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "agent-bell play task-complete --source claude"
+          }
+        ],
+        "_agent_bell": true
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "agent-bell play needs-input --source claude"
+          }
+        ],
+        "_agent_bell": true
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "agent-bell play needs-input --source claude"
+          }
+        ],
+        "_agent_bell": true
+      }
+    ]
+  }
+}

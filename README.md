@@ -26,6 +26,7 @@ Claude Code 自定义命令与配置项目。
 | `spinner_verbs.json` | 自定义 spinner 加载文案 |
 | `mem-lite.json` | mem-lite 的 MCP 工具权限：搜索、记忆、维护等 |
 | `context7.json` | context7 的 MCP 工具权限：库文档查询 |
+| `agent-bell.json` | agent-bell 的 Stop 和 Notification hook 配置 |
 
 `hooks/` 下可放置 hook 的 JSON 配置和脚本，安装时 JSON 合并到 settings.json，脚本软链接到 `~/.claude/hooks/`。
 
