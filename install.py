@@ -52,6 +52,7 @@ def _deep_merge(base, overlay, force=False, _parent_key=None):
 
     ANTHROPIC_AUTH_TOKEN is never overwritten, regardless of force.
     permissions.allow arrays are union-merged instead of overwritten.
+    Hook event arrays (PostToolUse, Stop, etc.) are also union-merged.
     """
     for key, value in overlay.items():
         if key == "ANTHROPIC_AUTH_TOKEN":
@@ -66,6 +67,14 @@ def _deep_merge(base, overlay, force=False, _parent_key=None):
                 for item in value:
                     if item not in base[key]:
                         base[key].append(item)
+            elif (
+                _parent_key == "hooks" and isinstance(base[key], list)
+                and isinstance(value, list)
+            ):
+                _existing = {json.dumps(e, sort_keys=True) for e in base[key]}
+                for item in value:
+                    if json.dumps(item, sort_keys=True) not in _existing:
+                        base[key].append(item)
             elif force:
                 base[key] = value
         else:
@@ -75,8 +84,8 @@ def _deep_merge(base, overlay, force=False, _parent_key=None):
 def _deep_revert(base, overlay, _parent_key=None):
     """Remove keys from base where values match overlay (recursing into dicts).
 
-    permissions.allow arrays are reverted by removing matching entries
-    individually instead of removing the whole key.
+    permissions.allow and hook event arrays are reverted by removing
+    matching entries individually instead of removing the whole key.
     """
     for key, value in overlay.items():
         if key not in base:
@@ -86,12 +95,15 @@ def _deep_revert(base, overlay, _parent_key=None):
             if not base[key]:
                 del base[key]
         elif (
-            _parent_key == "permissions" and key == "allow"
-            and isinstance(base[key], list) and isinstance(value, list)
+            isinstance(base[key], list) and isinstance(value, list)
+            and ((_parent_key == "permissions" and key == "allow")
+                 or _parent_key == "hooks")
         ):
-            for item in value:
-                if item in base[key]:
-                    base[key].remove(item)
+            _to_remove = {json.dumps(e, sort_keys=True) for e in value}
+            base[key] = [
+                e for e in base[key]
+                if json.dumps(e, sort_keys=True) not in _to_remove
+            ]
             if not base[key]:
                 del base[key]
         elif base[key] == value:
@@ -387,8 +399,8 @@ def _deep_check(merged, key, source_value, path=None, _parent_key=None):
     """Recursively check merged[key] contains source_value.
 
     Return (passed, failed).
-    permissions.allow arrays are checked as superset (all source entries
-    must exist in merged).
+    permissions.allow and hook event arrays are checked as superset
+    (all source entries must exist in merged).
     """
     if key == "ANTHROPIC_AUTH_TOKEN":
         return 0, 0
@@ -411,13 +423,22 @@ def _deep_check(merged, key, source_value, path=None, _parent_key=None):
             f += df
         return p, f
 
+    # List superset checks: all source entries must exist in merged
     if (
-        _parent_key == "permissions" and key == "allow"
-        and isinstance(source_value, list) and isinstance(merged_val, list)
+        isinstance(source_value, list) and isinstance(merged_val, list)
+        and ((_parent_key == "permissions" and key == "allow")
+             or _parent_key == "hooks")
     ):
-        missing = [item for item in source_value if item not in merged_val]
+        if _parent_key == "permissions":
+            _to_check = set(source_value)
+            _have = set(merged_val)
+        else:
+            _to_check = {json.dumps(e, sort_keys=True) for e in source_value}
+            _have = {json.dumps(e, sort_keys=True) for e in merged_val}
+        missing = _to_check - _have
         if missing:
-            print(f"  ✗ {path} (missing entries: {missing})")
+            label = "entries" if _parent_key == "permissions" else "entries"
+            print(f"  ✗ {path} (missing {label})")
             return 0, 1
         print(f"  ✓ {path}")
         return 1, 0
