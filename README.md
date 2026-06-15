@@ -9,11 +9,18 @@ Claude Code 自定义命令与配置项目。
 | `my-git-commit` | 暂存并提交，生成中文规范提交信息，支持多 commit 拆分 |
 | `my-git-amend` | 将修改合并到上一次提交，同步更新提交信息 |
 | `my-git-tag` | 打语义化版本 tag，自动归类 commit 生成改动摘要 |
-| `my-mermaid` | 生成色彩合理、分组清晰的 mermaid 图，支持自动推测图类型和上下文分析 |
 | `my-code-io` | 基于代码生成中文技术介绍文，含图表和多章节，面向非专业读者 |
 | `my-new-command` | 根据描述创建新的 Claude Code 命令文件 |
 | `my-new-hook` | 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目中输出到 hooks/ 目录 |
 | `my-plugin-init` | 初始化开发环境，安装推荐的插件和工具 |
+
+## 技能
+
+`skills/` 下的 `.md` 文件通过 `install.py` 软链接到 `~/.claude/skills/`，作为可被 Claude 自主调用的技能。
+
+| 技能 | 用途 |
+|------|------|
+| `my-mermaid` | 生成色彩合理、分组清晰的 mermaid 图，自动推测图类型，支持上下文分析和交互确认 |
 
 ## 配置片段
 
@@ -42,7 +49,7 @@ Claude Code 自定义命令与配置项目。
 ./install.py
 ```
 
-将 `commands/*.md` 软链接到 `~/.claude/commands/`，`settings/*.json` 合并到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`。
+将 `commands/*.md` 软链接到 `~/.claude/commands/`，`skills/*.md` 软链接到 `~/.claude/skills/`，`settings/*.json` 合并到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`。
 
 ## 卸载
 
