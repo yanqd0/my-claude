@@ -9,67 +9,55 @@ description: 初始化开发环境，安装推荐的 Claude Code 插件和工具
 
 | # | 插件 | 方式 | 检测标识 | 用途 | 前提 |
 |---|------|------|---------|------|------|
-| 1 | `claude-mem-lite` | plugin | `claude-mem-lite@sdsrss-claude-mem-lite` | 跨会话持久记忆，SQLite FTS5 + TF-IDF 混合检索 | Node.js >= 18 |
-| 2 | `claude-mem-lite`（npm 版） | npm | `claude-mem-lite` | 同上，npm 全局安装，需手动配置 settings.json | Node.js >= 18 |
-| 3 | `context7` | plugin | `context7@claude-plugins-official` | 拉取版本匹配的库文档，消除已废弃 API 的幻觉 | — |
-| 4 | `explanatory-output-style` | plugin | `explanatory-output-style@claude-plugins-official` | 教育式解释实现选择，输出附带设计决策说明 | — |
+| 1 | `claude-mem-lite` | npm | `which claude-mem-lite` | 跨会话持久记忆，SQLite FTS5 + TF-IDF 混合检索 | Node.js >= 18 |
+| 2 | `context7` | plugin | `context7@claude-plugins-official` | 拉取版本匹配的库文档，消除已废弃 API 的幻觉 | — |
+| 3 | `explanatory-output-style` | plugin | `explanatory-output-style@claude-plugins-official` | 教育式解释实现选择，输出附带设计决策说明 | — |
 
-> 同一插件有多行时，优先选 plugin 方式（自动管理 hook 和配置）。仅 plugin 系统不可用时回退到 npm。官方插件（context7、explanatory-output-style 等）无需 marketplace add，直接 `install`。
+> 官方插件（context7、explanatory-output-style 等）无需 marketplace add，直接 `install`。
 
 ## 执行步骤
 
 1. **环境检查**：`node --version` 确认 >= 18。
 2. **检测已安装**：
    - plugin 方式：读取 `~/.claude/plugins/installed_plugins.json`，检查 `plugins` 字段的 key 中是否包含"检测标识"。
-   - npm 方式：`npm list -g <检测标识>` 或 `which <检测标识>` 检查是否已全局安装。
+   - npm 方式：执行"检测标识"中的命令，按退出码判断是否已安装（0=已安装）。
    - 已安装的插件标记为"跳过"，不参与后续交互和安装。
 3. **确定安装项**：
    - 有 `<plugin_name>`：在清单中 fuzzy match，仅限未安装的。
    - 无参数：展示清单（标注哪些已安装、哪些待安装），通过交互确认要安装哪些。
    - 若全部已安装：汇报"所有推荐插件均已安装"，结束。
-4. **逐项安装**：按确认的清单顺序执行。npm 方式直接 `npm install -g`；plugin 方式输出对应的 `/plugin marketplace add` 和 `/plugin install` 命令，提示用户在主交互中执行。
-5. **验证**：汇报每项安装结果。plugin 方式安装后，提示退出会话并重启以生效。
+4. **逐项安装**：按确认的清单顺序执行。npm 方式直接执行对应安装命令；plugin 方式输出 `/plugin install` 命令，提示用户在主交互中执行。
+5. **验证**：汇报每项安装结果。plugin 方式安装后，提示 `/reload-plugins` 以加载，必要时重启会话。
 
 ## 安装详情
 
 ### 1. claude-mem-lite
 
-**plugin 方式（推荐）**
-
-```
-/plugin marketplace add sdsrss/claude-mem-lite
-/plugin install claude-mem-lite@sdsrss-claude-mem-lite
-```
-
-完成后退出当前会话并启动新会话，hook 和 MCP server 才会加载。
-
-**npm 方式**
-
 ```bash
-npm install -g claude-mem-lite
+npm install -g claude-mem-lite && claude-mem-lite install
 ```
 
-安装后需手动配置 `~/.claude/settings.json` 中的 MCP server 和 hook 脚本路径。不推荐，除非插件系统不可用。
+`claude-mem-lite install` 自动完成 MCP server 注册、hook 配置和数据库初始化，无需手动编辑 settings.json。
 
-### 3. context7
+### 2. context7
 
-官方插件，无需 marketplace add。
+官方插件。
 
 ```
 /plugin install context7@claude-plugins-official
 ```
 
-安装后，Claude 在回答库相关问题时自动拉取对应版本的文档，无需手动触发。
+安装后执行 `/reload-plugins`。Claude 在回答库相关问题时自动拉取对应版本的文档。
 
-### 4. explanatory-output-style
+### 3. explanatory-output-style
 
-官方插件，无需 marketplace add。
+官方插件。
 
 ```
 /plugin install explanatory-output-style@claude-plugins-official
 ```
 
-安装后，Claude 在实现代码时会附带设计决策说明，适合需要理解"为什么这样做"的场景。
+安装后执行 `/reload-plugins`。Claude 在实现代码时会附带设计决策说明。
 
 ---
 
