@@ -12,6 +12,7 @@ description: 初始化开发环境，安装推荐的 Claude Code 插件和工具
 | 1 | `claude-mem-lite` | npm | `which claude-mem-lite` | 跨会话持久记忆，SQLite FTS5 + TF-IDF 混合检索 | Node.js >= 18 |
 | 2 | `context7` | plugin | `context7@claude-plugins-official` | 拉取版本匹配的库文档，消除已废弃 API 的幻觉 | — |
 | 3 | `explanatory-output-style` | plugin | `explanatory-output-style@claude-plugins-official` | 教育式解释实现选择，输出附带设计决策说明 | — |
+| 4 | `agent-bell` | npm | `which agent-bell` | 多平台桌面通知与音效：Stop/Notification 事件触发，冷却防轰炸，tmux 兼容 | Node.js >= 18 |
 
 > 官方插件（context7、explanatory-output-style 等）无需 marketplace add，直接 `install`。
 
@@ -58,6 +59,14 @@ npm install -g claude-mem-lite && claude-mem-lite install
 ```
 
 安装后执行 `/reload-plugins`。Claude 在实现代码时会附带设计决策说明。
+
+### 4. agent-bell
+
+```bash
+npm install -g agent-bell && npx agent-bell init
+```
+
+`init` 向导自动检测 Claude Code 并配置 Stop + Notification hook，支持多套音效主题、可配置冷却和升级提示。配置文件在 `~/.agent-bell/config.json`。
 
 ---
 
