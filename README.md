@@ -24,6 +24,8 @@ Claude Code 自定义命令与配置项目。
 | `default.json` | 通用偏好：权限、主题、自动记忆、遥测开关、effort 级别、compact 窗口等 |
 | `provider.json` | API 提供商配置：接口地址、模型映射、子 agent 模型等 |
 | `spinner_verbs.json` | 自定义 spinner 加载文案 |
+| `mem-lite.json` | mem-lite 的 MCP 工具权限：搜索、记忆、维护等 |
+| `context7.json` | context7 的 MCP 工具权限：库文档查询 |
 
 `hooks/` 下可放置 hook 的 JSON 配置和脚本，安装时 JSON 合并到 settings.json，脚本软链接到 `~/.claude/hooks/`。
 

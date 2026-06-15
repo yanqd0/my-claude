@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mem-lite__mem_search",
+      "mcp__mem-lite__mem_recent",
+      "mcp__mem-lite__mem_get",
+      "mcp__mem-lite__mem_recall",
+      "mcp__mem-lite__mem_timeline",
+      "mcp__mem-lite__mem_save",
+      "mcp__mem-lite__mem_defer",
+      "mcp__mem-lite__mem_defer_list",
+      "mcp__mem-lite__mem_defer_drop",
+      "mcp__mem-lite__mem_browse",
+      "mcp__mem-lite__mem_maintain",
+      "mcp__mem-lite__mem_fts_check",
+      "mcp__mem-lite__mem_export"
+    ]
+  }
+}
