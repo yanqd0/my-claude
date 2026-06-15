@@ -1,5 +1,34 @@
 # Change Log
 
+## 0.2.0
+
+### Features
+
+- 新增 my-new-hook 命令：创建和安装 Claude Code hook，支持项目级和全局两种输出模式。
+- 新增 python_format hook：Python 文件 Write/Edit 后自动执行 yapf 或 black 格式化。
+- 新增 shell_format hook：Shell 脚本 Write/Edit 后自动执行 shfmt 格式化。
+- 新增 _notification hook：Stop/Notification 事件桌面通知，支持 macOS/Linux/tmux，含项目名标注。
+- install.py 全面支持 hooks 事件列表 union-merge：同一事件下多个 JSON 文件的条目可共存。
+- 新增 my-plugin-init 命令：增量安装推荐插件（claude-mem-lite、context7、explanatory-output-style、agent-bell）。
+- 新增 mem-lite.json、context7.json、agent-bell.json 三个 settings 权限与 hook 配置片段。
+- my-git-commit 引入 Conventional Commits 前缀规范，含 CLAUDE.md/记忆/历史三层识别体系。
+- 新增 my-mermaid 命令：15 种 Mermaid 图类型决策指南，含按类型差异化的大小控制策略。
+- 新增 my-code-io 命令：基于代码生成中文技术介绍文，含图表和多章节。
+- permissions.allow 数组支持多 settings 文件 union 合并与独立逐条卸载。
+- install.py 新增 --settings 强制安装参数与失效软链接自动清理。
+
+### Bug Fixes
+
+- 修复 install.py --revert 部分还原失败与 docstring 描述错误。
+- 修正 hooks JSON 中 hook 事件名与格式问题。
+- 修正 my-mermaid 标题示例中 graph→flowchart 废弃语法。
+
+### Others
+
+- 删除闲置的 my-git-push 和 my-git-pull 命令。
+- 重组 settings 配置片段：拆分为 default/provider/spinner_verbs/rtk。
+- 完善 CLAUDE.md：新增目录结构与同步策略。
+
 ## 0.1.1
 
 ### Features
