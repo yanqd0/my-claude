@@ -11,8 +11,9 @@ description: 初始化开发环境，安装推荐的 Claude Code 插件和工具
 |---|------|------|------|------|
 | 1 | `claude-mem-lite` | plugin | 跨会话持久记忆，SQLite FTS5 + TF-IDF 混合检索 | Node.js >= 18 |
 | 2 | `claude-mem-lite`（npm 版） | npm | 同上，npm 全局安装，需手动配置 settings.json | Node.js >= 18 |
+| 3 | `context7` | plugin | 拉取版本匹配的库文档，消除已废弃 API 的幻觉 | — |
 
-> 同一插件有多行时，优先选 plugin 方式（自动管理 hook 和配置）。仅插件系统不可用时回退到 npm。
+> 同一插件有多行时，优先选 plugin 方式（自动管理 hook 和配置）。仅插件系统不可用时回退到 npm。官方插件（context7、github 等）无需 marketplace add，直接 install。
 
 ## 执行步骤
 
@@ -43,6 +44,16 @@ npm install -g claude-mem-lite
 ```
 
 安装后需手动配置 `~/.claude/settings.json` 中的 MCP server 和 hook 脚本路径。不推荐，除非插件系统不可用。
+
+### 3. context7
+
+官方插件，无需 marketplace add。
+
+```
+/plugin install context7@claude-plugins-official
+```
+
+安装后，Claude 在回答库相关问题时自动拉取对应版本的文档，无需手动触发。
 
 ---
 
