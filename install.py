@@ -35,6 +35,12 @@ def install_commands(src_dir, dst_dir):
         dst.symlink_to(src)
         installed += 1
 
+    # Clean up broken symlinks (from deleted source files)
+    for dst in sorted(dst_dir.iterdir()):
+        if dst.is_symlink() and not dst.exists():
+            print(f"  cleanup: {dst.name} (broken link)")
+            dst.unlink()
+
     return installed
 
 
@@ -273,6 +279,12 @@ def install_hooks(hooks_dir, settings_path, hooks_dst, forced=None):
 
         dst.symlink_to(src)
         scripts_installed += 1
+
+    # Clean up broken symlinks (from deleted hook scripts)
+    for dst in sorted(hooks_dst.iterdir()):
+        if dst.is_symlink() and not dst.exists():
+            print(f"  cleanup: {dst.name} (hooks, broken link)")
+            dst.unlink()
 
     return json_installed, scripts_installed
 
