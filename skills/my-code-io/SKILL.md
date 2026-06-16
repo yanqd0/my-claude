@@ -17,7 +17,7 @@ allowed-tools: Read Write Bash Skill
 2. **分析代码**：`Read` `references/analysis-framework.md`，按 7 个维度从入口递归分析。
 3. **规划大纲**：根据分析结果设计章节结构，交互请用户确认。`Read` `references/writing-guide.md` 获取大纲规划、语言风格、代码引用规范。
 4. **撰写文章**：按 writing-guide 中的语言风格和引用规范撰写正文。
-5. **插入图表**：业务流程、数据流、模块关系用 mermaid 呈现，调用 `my-mermaid` skill。简单内容用 ASCII 替代。
+5. **插入图表**：对每个需要可视化的内容，使用 `Skill` 工具调用 `my-mermaid`，传入绘图内容的简要描述。my-mermaid 会返回带配色的 mermaid 代码，直接嵌入文章。简单内容（目录树、对照表等）用 ASCII 替代。
 6. **保存文章**：`Read` `references/output.md`，按约定路径和命名保存。仅将目录结构打印到对话。
 7. **多篇拆分**（仅步骤 3 中用户选择拆分时）：独立命名，各自确认大纲后撰写保存。
 
