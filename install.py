@@ -9,9 +9,11 @@ import sys
 from pathlib import Path
 
 
-def _install_items(src_dir, dst_dir, label=""):
-    """Symlink .md files from src_dir into dst_dir.
+def _install_items(src_dir, dst_dir, label="", glob_pattern="*.md"):
+    """Symlink items from src_dir into dst_dir.
 
+    *glob_pattern* controls what is matched (commands: "*.md",
+    skills: "*" for both .md files and directories).
     Return count of installed.  *label* is used in log lines.
     """
     if not src_dir.is_dir():
@@ -21,7 +23,9 @@ def _install_items(src_dir, dst_dir, label=""):
     installed = 0
     tag = f" ({label})" if label else ""
 
-    for src in sorted(src_dir.glob("*.md")):
+    for src in sorted(src_dir.glob(glob_pattern)):
+        if src.name.startswith("."):
+            continue
         dst = dst_dir / src.name
 
         if dst.is_symlink():
@@ -54,8 +58,8 @@ def install_commands(src_dir, dst_dir):
 
 
 def install_skills(src_dir, dst_dir):
-    """Symlink skills/*.md into ~/.claude/skills/."""
-    return _install_items(src_dir, dst_dir, label="skills")
+    """Symlink skills/* into ~/.claude/skills/ (dirs and .md files)."""
+    return _install_items(src_dir, dst_dir, label="skills", glob_pattern="*")
 
 
 # ── settings ───────────────────────────────────────────────────────────
@@ -468,14 +472,17 @@ def _deep_check(merged, key, source_value, path=None, _parent_key=None):
 # ── commands validation ────────────────────────────────────────────────
 
 
-def _validate(src_dir, dst_dir):
-    """Validate symlinks: all src .md files must be correct in dst."""
+def _validate(src_dir, dst_dir, glob_pattern="*.md"):
+    """Validate symlinks: all source items must be correct in dst."""
     if not src_dir.is_dir():
         return 0, 0
 
     passed = 0
     failed = 0
-    src_files = {f.name: f for f in src_dir.glob("*.md")}
+    src_files = {
+        f.name: f
+        for f in src_dir.glob(glob_pattern) if not f.name.startswith(".")
+    }
     dst_files = {}
 
     for f in dst_dir.iterdir():
@@ -561,7 +568,7 @@ def _run_test(src_dir, skills_dir, settings_dir, hooks_dir):
     print("=== Validation (commands) ===")
     passed, failed = _validate(src_dir, dst_dir)
     print("\n=== Validation (skills) ===")
-    sp, sf = _validate(skills_dir, skills_dst)
+    sp, sf = _validate(skills_dir, skills_dst, glob_pattern="*")
     passed += sp
     failed += sf
 
