@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git:tag,git:log,git:describe,git:add,git:commit) Read Edit Write
+allowed-tools: Bash(git:tag,git:log,git:describe) Read Edit Write
 description: 打语义化版本 tag，自动生成改动摘要并同步 CHANGELOG。
 ---
 
@@ -68,8 +68,6 @@ description: 打语义化版本 tag，自动生成改动摘要并同步 CHANGELO
      - 若新版本比所有已有版本都新 → 插入到 `# Change Log` 之后、第一个 `##` 之前。
      - 若新版本是已有 MAJOR.MINOR 系列的 patch → 插入到该系列区间内最上面。即位于更高 MAJOR.MINOR 之下、同系列最高 PATCH 之上。
    - 读取策略：仅读取 `CHANGELOG.md` 的前 50 行或 `grep -n '^## '` 获取版本号和行号，不读取全文件。
-6. 提交 CHANGELOG.md（若有修改）：
-   - 执行 `git add CHANGELOG.md`
-   - 执行 `git commit -m "<title>"`。如该版本已存在且被修改，title 不能与之前同版本的 CHANGELOG 提交重复。
+6. 提交 CHANGELOG.md（若有修改）：调用 `my-git-commit` skill 完成提交。如该版本已存在且被修改，提交标题不能与之前同版本的 CHANGELOG 提交重复。
 7. 执行 `git tag -a <tag_name> -m "<message>"`。tag 打在第 6 步新产生的提交上（若无新提交则打在 HEAD）。
 8. 将 tag 的版本号和内容摘要保存到项目记忆，便于后续查询。
