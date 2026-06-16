@@ -15,9 +15,9 @@ Claude Code 自定义命令与配置项目。
 
 ## 技能
 
-`skills/` 下的 `.md` 文件通过 `install.py` 软链接到 `~/.claude/skills/`，作为可被 Claude 自主调用的技能。
+`skills/` 下的 `.md` 文件通过 `install.py` 软链接到 `~/.claude/skills/`，作为可被 Claude 自主调用的 skill。
 
-| 技能 | 用途 |
+| Skill | 用途 |
 |------|------|
 | `my-mermaid` | 生成色彩合理、分组清晰的 mermaid 图，自动推测图类型，支持上下文分析和交互确认 |
 | `my-git-commit` | 暂存并提交，生成规范的中文提交信息，支持多 commit 拆分 |
