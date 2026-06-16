@@ -49,7 +49,7 @@ Claude Code 自定义命令与配置项目。
 ./install.py
 ```
 
-将 `commands/*.md` 软链接到 `~/.claude/commands/`，`skills/*.md` 软链接到 `~/.claude/skills/`，`settings/*.json` 合并到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`。
+将 `commands/*.md` 软链接到 `~/.claude/commands/`，`skills/` 下内容软链接到 `~/.claude/skills/`，`settings/*.json` 和 `hooks/*.json` deep-merge 到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`。
 
 ## 卸载
 
