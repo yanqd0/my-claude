@@ -14,7 +14,7 @@ allowed-tools: Read Write Bash Skill
    - 若 `<entry>` 是存在的文件或文件夹路径 → 直接作为入口。
    - 若 `<entry>` 是描述（非路径）→ 搜索匹配的代码位置，模糊时列出候选确认。
    - 若 `<entry>` 为空 → 从对话上下文推断入口，交互请用户确认。
-2. **分析代码**：`Read` `references/analysis-framework.md`，按 7 个维度从入口递归分析。
+2. **分析代码**：`Read` `references/analysis-framework.md`，根据入口类型和对话上下文确定分析模式（静态分析/模块深挖/过程复盘/外部信息），再按模式对应的维度收集信息。
 3. **规划大纲**：根据分析结果设计章节结构，交互请用户确认。`Read` `references/writing-guide.md` 获取大纲规划、语言风格、代码引用规范。
 4. **撰写文章**：按 writing-guide 中的语言风格和引用规范撰写正文。
 5. **插入图表**：对每个需要可视化的内容，使用 `Skill` 工具调用 `my-mermaid`，传入绘图内容的简要描述。my-mermaid 会返回带配色的 mermaid 代码，直接嵌入文章。简单内容（目录树、对照表等）用 ASCII 替代。
