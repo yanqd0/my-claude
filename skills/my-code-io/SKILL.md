@@ -23,4 +23,4 @@ allowed-tools: Read Write Bash Skill
 
 ## 格式与约束
 
-`Read` `references/format-spec.md` 获取完整格式规范（标题、代码块、术语、emoji、数学公式）和约束。
+`Read` `references/format-spec.md` 获取完整格式规范（标题、代码块、术语、emoji、数学公式）和约束（含输出路径限制）。
