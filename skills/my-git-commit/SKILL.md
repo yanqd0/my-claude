@@ -10,10 +10,12 @@ allowed-tools: Bash(git:*)
 
 ## 执行步骤
 
-1. **确认变更范围**：`git status` 和 `git diff`（含 `--staged`）。
-2. **识别提交规范**：`Read` `references/commit-convention.md`，按其"规范识别"流程确定 type 集合和格式。
-3. **确定提交方案**：
-   - 无 `<split_plan>`：所有修改合为 1 次提交。
-   - 有 `<split_plan>`：解析拆分计划，边界不明确时向用户确认。
-4. **多 commit 拆分**（仅当有 `<split_plan>`）：按顺序逐次 `git add` 相关文件 → `git commit`。
-5. **撰写提交信息**：type 选择、标题格式、description 规范均见 `references/commit-convention.md`。
+1. **判断是否需要提交**：`git status` 确认有变更（修改、新增、删除）。若工作区干净，汇报"nothing to commit"并结束。
+2. **加载提交格式规范**：`Read` `references/commit-message.md`，获取 title/description 格式要求。
+3. **判断提交前缀规范**：
+   - 若调用方（其他 skill/command）已指定 type 或规范 → 直接沿用。
+   - 否则 `Read` `references/commit-prefix.md`，按其"规范识别"流程确定是启用默认 Conventional Commits 还是沿用项目既有规范。
+4. **判断是否需要拆分**：
+   - 无 `<split_plan>` 且变更逻辑单一 → 跳过，合并为 1 次提交。
+   - 有 `<split_plan>` 或变更明显涉及多个独立逻辑 → `Read` `references/commit-split.md`，按其策略执行多 commit 拆分。边界不明确时向用户确认。
+5. **执行提交**：按步骤 3 确定的 type、步骤 2 的格式、步骤 4 的拆分方案，逐次 `git add` + `git commit`。
