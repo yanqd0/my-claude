@@ -10,12 +10,15 @@ allowed-tools: Bash(git:*)
 
 ## 执行步骤
 
-1. **判断是否需要提交**：`git status` 确认有变更（修改、新增、删除）。若工作区干净，汇报"nothing to commit"并结束。
-2. **加载提交格式规范**：`Read` `references/commit-message.md`，获取 title/description 格式要求。
-3. **判断提交前缀规范**：
-   - 若调用方（其他 skill/command）已指定 type 或规范 → 直接沿用。
-   - 否则 `Read` `references/commit-prefix.md`，按其"规范识别"流程确定是启用默认 Conventional Commits 还是沿用项目既有规范。
+1. **判断是否需要提交**：`git status` 确认有变更。若干净，汇报并结束。
+2. **加载提交格式**：`Read` `references/commit-message.md`，获取 title/description 格式。
+3. **确定提交前缀**（按以下流程，命中即停；CLAUDE.md 和记忆已在会话上下文中，无需重读）：
+   - (a) 调用方已指定 type → 直接沿用。
+   - (b) 会话上下文中的 CLAUDE.md（项目级/用户级）是否有提交规范描述（关键词：提交前缀、commit type、commit convention 等）→ 有则遵从。
+   - (c) 记忆中 `commit-convention` 记录 + `git log --oneline -10` 验证吻合 → 沿用。
+   - (d) `git log --oneline -30` 分析：Angular/Conventional Commits 已有规范 → 沿用；纯中文无前缀 → `Read` `references/commit-prefix.md` 启用默认规范。
+   - (e) 写记忆，提示可固化到 CLAUDE.md。
 4. **判断是否需要拆分**：
-   - 无 `<split_plan>` 且变更逻辑单一 → 跳过，合并为 1 次提交。
-   - 有 `<split_plan>` 或变更明显涉及多个独立逻辑 → `Read` `references/commit-split.md`，按其策略执行多 commit 拆分。边界不明确时向用户确认。
-5. **执行提交**：按步骤 3 确定的 type、步骤 2 的格式、步骤 4 的拆分方案，逐次 `git add` + `git commit`。
+   - 无 `<split_plan>` 且变更单一 → 合并为 1 次提交。
+   - 有 `<split_plan>` 或多逻辑 → `Read` `references/commit-split.md`，按策略拆分。边界不明确时确认。
+5. **执行提交**：按步骤 2 格式 + 步骤 3 前缀 + 步骤 4 拆分方案，逐次 `git add` + `git commit`。
