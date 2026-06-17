@@ -8,6 +8,18 @@ Skill 以 `skills/<name>/` 目录组织，必须包含 `SKILL.md`（入口），
 - 内容为执行流程 + 分支判断，轻量为主。步骤级的细节下沉到 `references/`。
 - 涉及多个分支逻辑时，明确"命中即停"的优先级链。
 
+### description 撰写规范
+
+`description` 是 Claude 决定是否调用 skill 时能看到的**唯一信息**——SKILL.md 正文只在调用后才加载。必须包含：
+
+1. **功能概括**：一句话说清 skill 做什么。
+2. **触发场景关键词**：密集列出能触发自主调用的具体词和短语。用"当用户说/提到/涉及/出现……时"引导触发判断。
+3. **调用方式区分**：写明是"可自主调用"还是"需用户显式触发"，还是两者皆可。
+
+示例对比：
+- 弱：`当用户表示想了解项目时，可自主调用。`
+- 强：`当用户说"介绍/分析/总结/这个项目是干什么的/这个模块怎么工作"等探索或复盘意图时，可自主调用。`
+
 ## references/ 拆分决策
 
 仅在内容满足任一条件时才拆分到 `references/`：
@@ -18,7 +30,16 @@ Skill 以 `skills/<name>/` 目录组织，必须包含 `SKILL.md`（入口），
 
 不满足以上条件的细节直接 inline 在 SKILL.md 中。
 
+## Skill 间调用
+
+当 skill A 需要调用 skill B 时，必须在 SKILL.md 或 reference 中显式写"使用 `Skill` 工具调用 `<name>`"，而非自然语言"调用 xxx skill"。后者 Claude 会理解为邀请它自己来执行，而不会实际触发目标 skill。
+
+## 上下文资源利用
+
+CLAUDE.md（项目级/用户级）和记忆文件在 SessionStart 时已加载到上下文，skill 内部无需显式 `Read` 这些文件——直接根据已有上下文判断即可。仅 `git log`、具体代码文件、reference 文件等动态或按需内容才需要显式读取。
+
 ## 示例
 
-- `my-mermaid/`：SKILL.md 含类型选择触发表 + 通用格式规范；references/ 下 10 个文件，每种图类型独立。
+- `my-mermaid/`：SKILL.md 含类型选择触发表 + 通用格式规范；references/ 下 10 个文件，每种图类型独立，每次只读 1 个。
 - `my-git-commit/`：SKILL.md 含完整识别流程链 + 条件分支；commit-message.md（每次必读，15 行）、commit-prefix.md（仅冷启动）、commit-split.md（仅拆分时），各自满足拆分条件。
+- `my-code-io/`：SKILL.md 含入口解析 + 7 步流程（30 行）；4 个 references：分析框架（4 种模式 × 29 个维度）、撰写规范（含 13 行图表路由表）、格式规范、输出路径。分析框架使用模式判断表决定读哪些维度。
