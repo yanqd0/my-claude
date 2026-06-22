@@ -46,6 +46,17 @@ Claude Code 自定义命令与配置项目。
 | `shell_format` | 对 Shell 脚本 Write/Edit 后自动执行 shfmt 格式化 |
 | `_notification` | Stop 和 Notification 事件的桌面通知（默认禁用，`_` 前缀） |
 
+## 推荐插件
+
+运行 `my-plugin-init` 可一键检测并安装。已安装的自动跳过。
+
+| 插件 | 方式 | 用途 |
+|------|------|------|
+| `claude-mem-lite` | npm | 跨会话持久记忆，SQLite FTS5 全文检索 |
+| `context7` | 官方插件 | 拉取版本匹配的库文档，消除已废弃 API 的幻觉 |
+| `explanatory-output-style` | 官方插件 | 教育式解释实现选择，输出附带设计决策说明 |
+| `agent-bell` | npm | 桌面通知与音效：Stop/Notification 事件触发，冷却防轰炸 |
+
 ## 安装
 
 ```sh
