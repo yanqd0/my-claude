@@ -26,7 +26,6 @@ allowed-tools: Read Write
    | 用户旅程 | `journey` | `gantt-timeline-journey.md` | 用户操作追踪 / 引导流程、功能体验路径 |
    | 占比分布 | `pie` | `pie.md` | 文件类型占比、测试覆盖率 / 流量分布、资源分配 |
    | 量化对比 | `xychart` | `xychart.md` | benchmark 对比 / 框架性能横向对比、QPS 柱状图 |
-   | 集合关系 | `venn-beta` | `venn-ishikawa.md` | 功能重叠、模块交集 / 技术方案差异与覆盖 |
    | 分支拓扑 | `gitGraph` | `git-graph.md` | 分支合并历史 / 分支策略、发布流程 |
    | 因果分析 | `ishikawa-beta` | `venn-ishikawa.md` | Bug 根因追溯 / 问题分解、故障归类 |
    | 知识层次 | `mindmap` | `mindmap.md` | 项目目录结构 / 技术体系全景、功能拆解 |
