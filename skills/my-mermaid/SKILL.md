@@ -47,3 +47,4 @@ allowed-tools: Read Write
 - 标题使用 YAML frontmatter（`---\ntitle: 中文标题\n---`），不支持的渲染器用 `%% 图标题：xxx`。
 - 不生成 README 或说明文件，mermaid 代码块直接嵌入回复。
 - 使用 `classDef` 和 `class` 进行语义着色（配色方案见各 reference 文件）。
+- subgraph 默认背景已覆盖为白色（`%%{init}%%` 中 `clusterBkg: '#f9fafb'`），通过 `style` 按业务语义指定分组颜色。
