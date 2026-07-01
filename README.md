@@ -43,6 +43,7 @@ Claude Code 自定义命令与配置项目。
 | 文件 | 用途 |
 |------|------|
 | `python_format` | 对 Python 文件 Write/Edit 后自动执行 yapf 或 black 格式化 |
+| `lua_format` | 对 Lua 文件 Write/Edit 后自动执行 stylua 格式化 |
 | `shell_format` | 对 Shell 脚本 Write/Edit 后自动执行 shfmt 格式化 |
 | `_notification` | Stop 和 Notification 事件的桌面通知（默认禁用，`_` 前缀） |
 
