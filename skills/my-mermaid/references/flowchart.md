@@ -5,9 +5,60 @@
 - 有分支、循环、条件路由 → `flowchart`。必须指定方向。
 - 无分支方块概览、节点 ≤ 12 → `block`。
 
-## 方向
+## 方向与布局
 
-必须指定：`TB`（上→下，流程步骤）、`LR`（左→右，架构全景）。
+### 整体方向
+
+`LR` 优先。判断：图不长（能在横屏半宽内完整展示）→ `LR`；链太长会溢出 → `TB`。
+
+### subgraph 方向（必须显式指定）
+
+每个 subgraph 用 `direction` 声明内部方向，不允许依赖默认值。原则：**充分利用 subgraph 宽度**。
+
+整体 `TB` 时，subgraph 内部：
+- 节点**无连接** → `direction LR`，左右排开用满宽度
+- 节点**有连接且链短** → `direction LR`，横向紧凑
+- 节点**有连接且链长** → `direction TB`，与整体同向
+
+整体 `LR` 时同理互换。
+
+```
+flowchart TB
+  subgraph A[模块A — 链长用TB]
+    direction TB
+    P --> Q --> R --> S --> T
+  end
+  subgraph B[模块B — 无连接用LR]
+    direction LR
+    X
+    Y
+    Z
+  end
+```
+
+### 隐式分层（subgraph 内无连接节点过多时）
+
+节点数 ≥ 6 且无连接时，用 `~~~`（不可见连线）强制分层，如 9 节点 → 3 层 × 3 列、8 节点 → 2 层 × 4 列。
+
+用 `linkStyle` 将分层连线的颜色设为 subgraph 底色，视觉上完全隐藏：
+
+```
+flowchart TB
+  subgraph layers[分层展示]
+    direction TB
+    A1 & A2 & A3
+    A1 ~~~ B1
+    B1 & B2 & B3
+    B1 ~~~ C1
+    C1 & C2 & C3
+  end
+  linkStyle 0 stroke:#f9fafb,color:#f9fafb
+  linkStyle 1 stroke:#f9fafb,color:#f9fafb
+```
+
+- `&` 将同行节点并排
+- `~~~` 创建无箭头、不可见的桥接线，仅用于控制布局
+- `linkStyle N` 按连线出现顺序编号（从 0 开始），色值必须与该 subgraph 的 `style fill` 一致（非固定值，取业务语义配色表中对应的 fill 色）
 
 ## 节点形状
 
