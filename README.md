@@ -6,7 +6,6 @@ Claude Code 自定义命令与配置项目。
 
 | 命令 | 用途 |
 |------|------|
-| `my-git-amend` | 将修改合并到上一次提交，同步更新提交信息 |
 | `my-git-tag` | 打语义化版本 tag，自动归类 commit 生成改动摘要 |
 | `my-new-command` | 根据描述创建新的 Claude Code 命令文件 |
 | `my-new-hook` | 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目中输出到 hooks/ 目录 |
@@ -20,6 +19,7 @@ Claude Code 自定义命令与配置项目。
 |------|------|
 | `my-mermaid` | 生成色彩合理、分组清晰的 mermaid 图，自动推测图类型，支持上下文分析和交互确认 |
 | `my-git-commit` | 暂存并提交，生成规范的中文提交信息，支持多 commit 拆分 |
+| `my-git-amend` | 将修改合并到已有提交（支持指定范围：数字/SHA1/引用/自然语言），生成规范提交信息，支持 reflog 回退 |
 | `my-code-io` | 基于代码生成中文技术介绍文，含图表和多章节，面向非专业读者 |
 
 ## 配置片段
