@@ -34,21 +34,21 @@
 
 ### 图类型路由
 
-根据文章内容选择对应的 mermaid 图类型：
+`Read` `~/.claude/skills/my-mermaid/references/type-index.md` 获取图类型选择表（单一事实来源）。根据文章内容在表中匹配对应的 mermaid 图类型。常见映射：
 
-| 文章内容 | 图类型 | 示例场景 |
-|---------|--------|---------|
-| 整体架构、分层结构 | `flowchart TB` | "画出项目的三层架构：前端→后端→数据库" |
-| 模块依赖、组件关系 | `flowchart LR` | "画出 install.py 的模块依赖关系" |
-| API 调用链、请求流程 | `sequenceDiagram` | "画出用户登录的完整时序流程" |
-| 状态变更、生命周期 | `stateDiagram-v2` | "画出订单从创建到完成的状态转移" |
-| 类/接口层次 | `classDiagram` | "画出核心 Service 类的继承关系" |
-| 数据库表关系 | `erDiagram` | "画出用户-订单-商品三表的 ER 关系" |
-| 项目演进、版本历史 | `timeline` | "画出项目从 0.1.0 到 0.2.0 的版本演进" |
-| 功能占比、构成分析 | `pie` | "画出代码语言占比分布" |
-| 性能对比 | `xychart` | "画出各模块 benchmark 对比柱状图" |
-| 分支策略 | `gitGraph` | "画出项目的 GitFlow 分支管理流程" |
-| 项目目录、知识体系 | `mindmap` | "画出项目模块职责的全景脑图" |
-| 根因分析、方案对比 | `ishikawa-beta` | "画出性能瓶颈的鱼骨图根因分析" |
+| 文章内容 | 图类型 |
+|---------|--------|
+| 整体架构、分层结构 | `flowchart TB` |
+| 模块依赖、组件关系 | `flowchart LR` |
+| API 调用链、请求流程 | `sequenceDiagram` |
+| 状态变更、生命周期 | `stateDiagram-v2` |
+| 类/接口层次 | `classDiagram` |
+| 数据库表关系 | `erDiagram` |
+| 项目演进、版本历史 | `timeline` |
+| 功能占比、构成分析 | `pie` |
+| 性能对比 | `xychart` |
+| 分支策略 | `gitGraph` |
+| 项目目录、知识体系 | `mindmap` |
+| 根因分析、方案对比 | `ishikawa-beta` |
 
 不适合 mermaid 的内容（目录树、对照表等）用 ASCII 替代。每张图前用文字说明内容和如何阅读。
