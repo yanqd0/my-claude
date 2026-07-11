@@ -4,7 +4,7 @@ description: >-
   将当前或指定范围的提交合并为一个，生成规范的中文提交信息。当用户说"合并提交/squash/amend/
   整理提交历史/压缩提交/合并到上一个/合并最近N个"时，可自主调用；也作为其他 skill 的提交整理工具被调用。
   本技能可自主调用，也支持用户显式通过 /my-git-amend 触发。
-allowed-tools: Bash(git:*)
+allowed-tools: Bash(git:*) Read
 ---
 
 将修改合并到已有提交。可接收一个可选参数 `<target>`。

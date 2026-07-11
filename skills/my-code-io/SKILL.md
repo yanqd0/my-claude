@@ -4,7 +4,7 @@ description: >-
   基于代码生成中文技术介绍文，含 mermaid 图表和多章节。当用户说"介绍/分析/总结/写文档/
   这个项目是干什么的/这个模块怎么工作/刚才做了什么"等探索或复盘意图时，可自主调用。
   也支持对单个函数、模块或整个项目的深度分析。
-allowed-tools: Read Write Bash Skill
+allowed-tools: Read Write Bash Skill Grep Glob
 ---
 
 基于给定代码入口，分析并撰写多章节技术介绍文章。支持一个参数 `<entry>`：文件路径、文件夹路径或功能描述。
