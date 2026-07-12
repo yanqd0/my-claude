@@ -44,7 +44,7 @@ description: 简短中文用途说明，一行。
 
 | command | 特点 |
 |---------|------|
-| `my-git-tag` | 多步骤 + 分支：约 40 行，含参数校验、交互确认、格式模板；CHANGELOG 处理委托给 `my-changelog` skill |
+| `my-git-tag` | 多步骤 + 分支：约 34 行，含交互确认、tag message 模板；版本号判断复用 `my-changelog` 的共享 reference，CHANGELOG 处理委托 `my-changelog` skill |
 | `my-code-io` | 分析+生成类：64 行，含多维度分析框架和输出格式规范 |
 | `my-plugin-init` | 检测+安装类：73 行，含清单表格、增量检测、逐项执行 |
 | `my-new-command` | 元创建类：23 行，根据描述生成新 command |

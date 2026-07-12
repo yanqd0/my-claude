@@ -16,13 +16,7 @@ allowed-tools: Bash(git:log,git:describe,git:tag,git:diff) Read Edit Write Grep 
 
 ## 执行步骤
 
-1. **确定当前版本**（命中即停）：
-   - (a) 调用方（如 my-git-tag）已传入 `<version>` → 直接用作当前版本。
-   - (b) 缺省时自动判断：`Grep`（pattern `^## `）取 CHANGELOG.md 最新（最上）版本号，`git tag -l <该版本>` 查是否已有对应 tag：
-     - **最新条目无对应 tag** → 它就是当前版本（未发布、正在积累），本次整理并补充它。
-     - **最新条目已有对应 tag** → 当前版本是其后尚未写入的下一个新版本，需按语义化版本推算版本号（破坏性变更→MAJOR、新功能→MINOR、仅修复→PATCH）。
-   - (c) 版本号推算不明确时（如上一版 `1.0.0`，下一版可能是 `2.0.0`/`1.1.0`/`1.0.1`）→ 使用 `AskUserQuestion` 列出候选版本号请用户选择，不擅自决定。
-   - 确定区间 `<range>`：默认 `<上一个tag>..HEAD`（`git describe --tags --abbrev=0` 取上一个 tag；无 tag 时取全部历史）。
+1. **确定当前版本与区间**：`Read` `references/next-version.md`，按其流程确定当前版本号 `<version>`（调用方已传入则直接采用；否则自动判断/推算，不明确时用 `AskUserQuestion` 询问）与上一个 tag。区间 `<range>` 默认 `<上一个tag>..HEAD`（无 tag 时取全部历史）。
 
 2. **收集本版本全量变动**（作为整合与简化的依据）：
    - **文件变动（全量）**：`git diff <range> --stat` 看改了哪些文件、规模。
