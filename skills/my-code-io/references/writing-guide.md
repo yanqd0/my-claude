@@ -30,25 +30,6 @@
 
 ## 图表（步骤 5）
 
-对每个需要可视化的内容，使用 `Skill` 工具调用 `my-mermaid`，传入绘图内容描述。my-mermaid 返回带配色的代码，直接嵌入。
+文章中所有 mermaid 图**一律经 `Skill` 工具调用 `my-mermaid` 生成，不得自行手写 mermaid 代码，也不 `Read` type-index 自行选型**——图类型选择与配色是 my-mermaid 的职责。my-code-io 只判断哪里需要图、该图表达什么，把这段内容描述传给 my-mermaid，拿回带配色代码直接嵌入。
 
-### 图类型路由
-
-`Read` `~/.claude/skills/my-mermaid/references/type-index.md` 获取图类型选择表（单一事实来源）。根据文章内容在表中匹配对应的 mermaid 图类型。常见映射：
-
-| 文章内容 | 图类型 |
-|---------|--------|
-| 整体架构、分层结构 | `flowchart TB` |
-| 模块依赖、组件关系 | `flowchart LR` |
-| API 调用链、请求流程 | `sequenceDiagram` |
-| 状态变更、生命周期 | `stateDiagram-v2` |
-| 类/接口层次 | `classDiagram` |
-| 数据库表关系 | `erDiagram` |
-| 项目演进、版本历史 | `timeline` |
-| 功能占比、构成分析 | `pie` |
-| 性能对比 | `xychart` |
-| 分支策略 | `gitGraph` |
-| 项目目录、知识体系 | `mindmap` |
-| 根因分析、方案对比 | `ishikawa-beta` |
-
-不适合 mermaid 的内容（目录树、对照表等）用 ASCII 替代。每张图前用文字说明内容和如何阅读。
+不适合 mermaid 的内容（目录树、对照表等）用 ASCII 替代；每张图前用一句文字说明它表达什么、如何阅读。
