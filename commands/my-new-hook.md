@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read Write Bash(chmod:*) Edit
+allowed-tools: Read Write Bash(chmod:*) Edit AskUserQuestion
 description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目中输出到 hooks/ 目录。
 ---
 
@@ -25,7 +25,7 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
      - `Setup` / `TaskCreated` / `TaskCompleted` / `TeammateIdle` / `InstructionsLoaded` / `Elicitation` / `ElicitationResult` / `WorktreeCreate` / `WorktreeRemove`
 2. 推测 event：
    - 若用户提供的 event 在支持列表中，直接使用。
-   - 若 event 参数为空或不在支持列表中，根据 `<description_or_script>` 的内容推测最匹配的事件，列出候选（标注推荐项和理由），通过交互提示请用户确认。
+   - 若 event 参数为空或不在支持列表中，根据 `<description_or_script>` 的内容推测最匹配的事件，用 `AskUserQuestion`（单选）列出候选事件让用户选定：推荐项置首并在 label 标注（推荐），description 写明理由。
 3. 生成内容：
    - **hook JSON**：格式如下（标准 Claude Code hooks 配置）：
      ```json
@@ -47,7 +47,7 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
      ```
      若需要限定工具类型，在 matcher 中填写工具名或模式；否则留空。若需要多个 hook 动作，在 `hooks` 数组中追加即可。
    - **hook 脚本**：默认使用 Python 3，从 stdin 读取 Claude Code 传入的 JSON 事件数据。若用户提供了现成脚本文件，直接复制使用。
-4. 交互确认：将 JSON 片段和 Python 脚本内容完整展示，得到确认后再写入。
+4. 交互确认：将 JSON 片段和 Python 脚本内容完整展示，用 `AskUserQuestion`（单选）确认，选项如"写入"、"修改后再写入（在 Other 描述改动）"；选择修改则按反馈迭代后重新确认。
 5. 写入文件：
    - **默认模式**（非本项目）：直接操作 `~/.claude/`。
      - JSON 片段：读取 `~/.claude/settings.json`，将 hook 配置 deep-merge 进去后写回。若文件不存在则创建。

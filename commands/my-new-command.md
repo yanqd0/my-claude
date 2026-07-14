@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read Write Bash(ls,python3:*)
+allowed-tools: Read Write Bash(ls,python3:*) AskUserQuestion
 description: 根据描述创建新的 Claude Code 命令文件。
 ---
 
@@ -16,7 +16,7 @@ description: 根据描述创建新的 Claude Code 命令文件。
 3. 生成内容：
    - 参考既有命令的结构（YAML frontmatter + 概述 + `## 执行步骤` + 分步说明 + 格式规范），结合功能描述生成新文件。
    - frontmatter 中 `allowed-tools` 按最小权限原则填写，`description` 一句中文概述。
-4. 交互确认：将生成的完整内容展示给用户，得到确认后再写入。用户可能要求修改，按反馈迭代。
+4. 交互确认：将生成的完整内容展示给用户，用 `AskUserQuestion`（单选）确认，选项如"写入"、"修改后再写入（在 Other 描述改动）"；选择修改则按反馈迭代后重新确认。
 5. 写入文件：
    - 默认写入 `~/.claude/commands/<name>.md`，已存在则提示冲突，由用户决定覆盖或改名。
    - 若存在 `CLAUDE.md` 且其中指示了项目级写入策略，则按其指示操作。

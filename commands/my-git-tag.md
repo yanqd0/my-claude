@@ -7,7 +7,7 @@ description: 打语义化版本 tag，自动生成改动摘要并同步 CHANGELO
 
 ## 执行步骤
 
-1. 确定版本号：`Read` `~/.claude/skills/my-changelog/references/next-version.md`，按其流程解析或推算版本号——提供 `<tag_name>` 则采用并校验格式，为空则自动推算下一个版本号；对用户非空输入做了调整（如修正格式）时须先请用户确认。该 reference 与 my-changelog 共享同一份判断逻辑。
+1. 确定版本号：`Read` `~/.claude/skills/my-changelog/references/next-version.md`，按其流程解析或推算版本号——提供 `<tag_name>` 则采用并校验格式，为空则自动推算下一个版本号；对用户非空输入做了调整（如修正格式）时须先用 `AskUserQuestion` 请用户确认。该 reference 与 my-changelog 共享同一份判断逻辑。
 2. 同步 CHANGELOG：使用 `Skill` 工具调用 `my-changelog`，传入版本号 `<tag_name>` 与区间 `<上一个tag>..HEAD`。my-changelog 会归类改动（Features / Bug Fixes / Others）、整合简化后写入 `CHANGELOG.md` 并提交。其归类结果保留在上下文中，供下一步生成 tag message，无需重新分析 commit。
 3. 生成 tag message：基于步骤 2 的归类结果整形为 tag message 格式（与 CHANGELOG 条目同源，仅改呈现）：
    - 自动生成一句概括性的大版本标题（中文，≤50 字符），概括本次版本的主要变化方向。

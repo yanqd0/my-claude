@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(node:*,npm:*,which:*,cat:*)
+allowed-tools: Bash(node:*,npm:*,which:*,cat:*) AskUserQuestion
 description: 初始化开发环境，安装推荐的 Claude Code 插件和工具。
 ---
 
@@ -25,7 +25,7 @@ description: 初始化开发环境，安装推荐的 Claude Code 插件和工具
    - 已安装的插件标记为"跳过"，不参与后续交互和安装。
 3. **确定安装项**：
    - 有 `<plugin_name>`：在清单中 fuzzy match，仅限未安装的。
-   - 无参数：展示清单（标注哪些已安装、哪些待安装），通过交互确认要安装哪些。
+   - 无参数：展示清单（标注哪些已安装、哪些待安装），用 `AskUserQuestion`（多选 `multiSelect: true`）让用户勾选要安装的插件，选项为各未安装插件及其一句话用途。
    - 若全部已安装：汇报"所有推荐插件均已安装"，结束。
 4. **逐项安装**：按确认的清单顺序执行。npm 方式直接执行对应安装命令；plugin 方式输出 `/plugin install` 命令，提示用户在主交互中执行。
 5. **验证**：汇报每项安装结果。plugin 方式安装后，提示 `/reload-plugins` 以加载，必要时重启会话。

@@ -4,7 +4,7 @@ description: >-
   暂存并提交当前修改，生成规范的中文提交信息。当对话中完成阶段性工作、需要提交代码时，
   可自主调用；也作为其他 skill/command 的提交工具被调用。支持多 commit 拆分。
   本技能可自主调用，也支持用户显式通过 /my-git-commit 触发。
-allowed-tools: Bash(git:*) Read
+allowed-tools: Bash(git:*) Read AskUserQuestion
 ---
 
 根据当前对话上下文中涉及的修改，执行 git commit。可接收一个可选参数 `<split_plan>`。

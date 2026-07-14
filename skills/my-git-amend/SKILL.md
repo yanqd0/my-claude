@@ -4,7 +4,7 @@ description: >-
   将当前或指定范围的提交合并为一个，生成规范的中文提交信息。当用户说"合并提交/squash/amend/
   整理提交历史/压缩提交/合并到上一个/合并最近N个"时，可自主调用；也作为其他 skill 的提交整理工具被调用。
   本技能可自主调用，也支持用户显式通过 /my-git-amend 触发。
-allowed-tools: Bash(git:*) Read
+allowed-tools: Bash(git:*) Read AskUserQuestion
 ---
 
 将修改合并到已有提交。可接收一个可选参数 `<target>`。
@@ -33,7 +33,7 @@ allowed-tools: Bash(git:*) Read
 - **(d) 命名引用**（本地分支、远程分支 `origin/xxx`、tag 等，`git rev-parse --verify <ref>^{commit}` 成功且不在 (b)(c) 中）→ 合并时**不包括该引用指向的 commit**。
   - 重置目标为 `<ref>` 本身，即合并 `<ref>..HEAD` 范围内的提交。
   - 对 tag 额外注意：tag 默认不可修改，此处即使 tag 指向的 commit 不被合并，tag 也保持不变。
-- **(e) 自然语言描述** → 按语义映射到 (a)-(d) 分支：数量表达（"最近 N 个"→b）、范围表达（"从 xxx 之后"→c/d）、包含表达（"包括 xxx"→c）、amend 意图（"合并到上一个"→a）。**无法明确解析时**列出候选方案请用户选择。
+- **(e) 自然语言描述** → 按语义映射到 (a)-(d) 分支：数量表达（"最近 N 个"→b）、范围表达（"从 xxx 之后"→c/d）、包含表达（"包括 xxx"→c）、amend 意图（"合并到上一个"→a）。**无法明确解析时**用 `AskUserQuestion`（单选）列出候选方案请用户选定，选项为各候选范围及其一句话说明。
 
 ### 2. 确定合并范围并校验
 
@@ -85,7 +85,7 @@ allowed-tools: Bash(git:*) Read
 - **标准 amend**：对比 `git diff --stat`，仅更新 title 和 description 中反映本次修改的部分，其余描述保留。
 - **有目标范围**：综合所有被合并提交的 title + body 和 `git diff --stat <range>`，提取主题。生成新的 title（`<prefix>: <描述>`，≤40 字符，中文）和 description（按被合并提交分组列出改动要点，保留关键细节）。
 
-展示提交信息预览，请用户确认。
+展示提交信息预览，用 `AskUserQuestion`（单选）请用户确认，选项如"确认提交"、"修改信息（在 Other 描述）"；选择修改则据反馈重拟后再确认。
 
 ### 5. 执行合并
 
