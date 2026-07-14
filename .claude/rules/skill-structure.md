@@ -34,6 +34,14 @@ Skill 以 `skills/<name>/` 目录组织，必须包含 `SKILL.md`（入口），
 
 当 skill A 需要调用 skill B 时，必须在 SKILL.md 或 reference 中显式写"使用 `Skill` 工具调用 `<name>`"，而非自然语言"调用 xxx skill"。后者 Claude 会理解为邀请它自己来执行，而不会实际触发目标 skill。
 
+## 用户交互（AskUserQuestion）
+
+需要用户输入或确认的交互点，一律显式调用 `AskUserQuestion`，不用自然语言"提示用户确认/列出候选让用户选"，并在 frontmatter 的 `allowed-tools` 中声明 `AskUserQuestion`。
+
+- **选择题优先**：选项互斥用单选，可并存用多选（`multiSelect: true`）。
+- **选答题**：纯确认或开放输入时，把推荐动作写成 label 置首的选项，改动/自定义值走自动提供的 Other 自由文本（如"修改后再写入（在 Other 描述改动）"）。
+- **仅限真实决策点**：`git status`、`git log`、`node --version` 等状态自检读作"确认"但不是交互点，保持原样；已明确描述、有默认行为等无歧义、可短路的场景不强行发问。
+
 ## 上下文资源利用
 
 CLAUDE.md（项目级/用户级）和记忆文件在 SessionStart 时已加载到上下文，skill 内部无需显式 `Read` 这些文件——直接根据已有上下文判断即可。仅 `git log`、具体代码文件、reference 文件等动态或按需内容才需要显式读取。

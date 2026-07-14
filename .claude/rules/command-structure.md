@@ -31,6 +31,14 @@ description: 简短中文用途说明，一行。
 
 简单的 if-else 用缩进子项。复杂多分支（如 my-git-tag 的版本号推算）用编号子步骤 + 命中即停链。
 
+## 用户交互（AskUserQuestion）
+
+需要用户输入或确认的交互点，一律显式调用 `AskUserQuestion`，不用自然语言"提示用户确认/列出候选让用户选"，并在 frontmatter 的 `allowed-tools` 中声明 `AskUserQuestion`。
+
+- **选择题优先**：选项互斥用单选，可并存用多选（`multiSelect: true`）。
+- **选答题**：纯确认或开放输入时，把推荐动作写成 label 置首的选项，改动/自定义值走自动提供的 Other 自由文本（如"修改后再写入（在 Other 描述改动）"）。
+- **仅限真实决策点**：`git status`、`git log`、`node --version` 等状态自检读作"确认"但不是交互点，保持原样；已明确描述、有默认行为等无歧义、可短路的场景不强行发问。
+
 ## Skill vs Command 拦截判断
 
 新建前，先过以下检查。任一条命中，**推荐使用 skill 而非 command**：
