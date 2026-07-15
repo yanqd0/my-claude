@@ -32,4 +32,4 @@
 
 文章中所有 mermaid 图**一律经 `Skill` 工具调用 `my-mermaid` 生成，不得自行手写 mermaid 代码，也不 `Read` type-index 自行选型**——图类型选择与配色是 my-mermaid 的职责。my-code-io 只判断哪里需要图、该图表达什么，把这段内容描述传给 my-mermaid，拿回带配色代码直接嵌入。
 
-不适合 mermaid 的内容（目录树、对照表等）用 ASCII 替代；每张图前用一句文字说明它表达什么、如何阅读。
+初级分流：tree 类（目录树、层级结构）、极简无分支线性流程等简单内容用 ASCII——必须先 `Read` `references/ascii-diagram.md` 按其规范绘制（含汉字宽度规则与转 my-mermaid 的二次分流出口）；其余一律交 my-mermaid。每张图前用一句文字说明它表达什么、如何阅读。
