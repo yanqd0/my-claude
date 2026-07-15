@@ -4,7 +4,7 @@ description: >-
   暂存并提交当前修改，生成规范的中文提交信息。当对话中完成阶段性工作、需要提交代码时，
   可自主调用；也作为其他 skill/command 的提交工具被调用。支持多 commit 拆分。
   本技能可自主调用，也支持用户显式通过 /my-git-commit 触发。
-allowed-tools: Bash(git:*) Read AskUserQuestion
+allowed-tools: Bash(git:*) Read AskUserQuestion Agent
 ---
 
 根据当前对话上下文中涉及的修改，执行 git commit。可接收一个可选参数 `<split_plan>`。
@@ -23,3 +23,5 @@ allowed-tools: Bash(git:*) Read AskUserQuestion
    - 无 `<split_plan>` 且变更单一 → 合并为 1 次提交。
    - 有 `<split_plan>` 或多逻辑 → `Read` `references/commit-split.md`，按策略拆分。边界不明确时确认。
 5. **执行提交**：按步骤 2 格式 + 步骤 3 前缀 + 步骤 4 拆分方案，逐次 `git add` + `git commit`。
+6. **派出提交后审查**：提交完成后，若含实质性代码改动（非纯文档/格式/重命名），
+   使用 `Agent` 工具后台派出 `code-reviewer` 审查最新 commit；不等待结果、不阻塞后续对话。

@@ -30,6 +30,9 @@ Claude Code 自定义命令、技能、agent 与配置项目。
 | Agent | 用途 |
 |------|------|
 | `tester` | 孤立脚本测试员：单文件 Python/Bash 脚本的既有测试运行与快速验证，只读不改；有构建系统的项目应由项目级 tester 覆盖 |
+| `code-reviewer` | 提交后质量审查：实质性 commit 后由 my-git-commit 自动后台派出，委托内置 code-review 技能审查该提交，修复建议支持 my-git-amend 回写；不做安全审计 |
+
+code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外手工 `git commit` 不会触发。
 
 ## 配置片段
 
