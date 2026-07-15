@@ -8,7 +8,6 @@ Claude Code 自定义命令、技能、agent 与配置项目。
 |------|------|
 | `my-git-tag` | 打语义化版本 tag，自动归类 commit 生成改动摘要 |
 | `my-new-command` | 根据描述创建新的 Claude Code 命令文件 |
-| `my-new-agent` | 在当前项目创建项目级 agent 定义文件，支持推断/校验名称、前置确认、覆盖全局同名 agent |
 | `my-new-hook` | 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目中输出到 hooks/ 目录 |
 | `my-plugin-init` | 初始化开发环境，安装推荐的插件和工具 |
 
@@ -23,6 +22,7 @@ Claude Code 自定义命令、技能、agent 与配置项目。
 | `my-git-amend` | 将修改合并到已有提交（支持指定范围：数字/SHA1/引用/自然语言），生成规范提交信息，支持 reflog 回退 |
 | `my-code-io` | 基于代码生成中文技术介绍文，含图表和多章节，面向非专业读者，可选指定输出路径 |
 | `my-changelog` | 管理 CHANGELOG.md：判断当前版本、归类整合 commit、逆序插入、合并同版本重复项，仅动当前版本 |
+| `my-new-agent` | 在当前项目创建项目级 agent：内置 6 个社区角色模板（tester/debugger/ci-devops/db-specialist/performance/navigator）与职能/需求/成本收益总体评审，可自主调用 |
 
 ## Agent
 
