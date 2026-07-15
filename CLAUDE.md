@@ -9,7 +9,7 @@ Claude Code 自定义 command 与 skill 项目。
 - `agents/` — 全局 subagent 定义（`.md`），软链接到 `~/.claude/agents/`
 - `settings/` — settings.json 片段（`.json`），deep-merge 到 `~/.claude/settings.json`
 - `hooks/` — hook 配置（`.json`）和脚本（`.py` 等），JSON 合并到 settings.json，脚本软链接到 `~/.claude/hooks/`
-- `.claude/rules/` — 项目级规则，SessionStart 自动加载。含 `skill-structure.md`、`command-structure.md`
+- `.claude/rules/` — 项目级规则，SessionStart 自动加载。含 `skill-structure.md`、`command-structure.md`、`agent-structure.md`
 
 ## 同步策略
 
