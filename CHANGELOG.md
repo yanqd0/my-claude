@@ -1,5 +1,32 @@
 # Change Log
 
+## 0.3.0
+
+### Features
+
+- my-mermaid、my-code-io、my-git-commit、my-git-amend 四个核心功能从命令迁移为 skill，支持 Claude 根据场景自主调用。
+- 新增 my-changelog skill：管理 CHANGELOG.md，判断当前版本、归类整合 commit 并逆序插入，与 my-git-tag 共享版本判断逻辑。
+- my-mermaid 全面升级：参考文件重写为 11 个按需加载的 reference，新增 subgraph 业务语义着色、方向布局与隐式分层规则、配色分组扩展，提取共享 classDef 配色供所有图类型复用。
+- my-code-io 大幅增强：分析维度扩展至 9 组 × 29 个维度，新增图表类型路由表，输出路径改为 `~/Documents/claude/<project>`，支持 `<output>` 路径参数，步骤 3 拆为大纲/位置推导/确认/调整子步骤。
+- 新增 lua_format hook：Lua 文件 Write/Edit 后自动执行 stylua 格式化。
+- install.py 新增 skills 目录级安装支持，权限配置（permissions.allow）支持多文件 union 合并。
+- AskUserQuestion 交互规范全面落地：新增项目级规则明确定义，所有 skill/command 交互点统一改造为显式调用。
+- 新增 `_anthropic.json` 可选官方模型配置（Opus/Sonnet/Haiku 分层映射），`provider.json` 重命名为 `deepseek-v4.json` 并移入 compact 窗口配置。
+
+### Bug Fixes
+
+- 修复 my-code-io 图表步骤自行手绘 mermaid 导致丢失配色的问题，改为强制经 my-mermaid skill 生成图代码。
+- 补全 skill frontmatter 缺失的 `allowed-tools` 权限声明。
+
+### Others
+
+- 新增 `.claude/rules/command-structure.md` 与 `skill-structure.md` 项目级规则，定义目录结构、格式、交互与 Skill 间调用等规范。
+- 完善 skill description 触发短语与调用模式，强化自主调用识别能力。
+- my-git-commit 参考文件拆分为 message/prefix/split 三份，规范识别优化为无需显式读取 CLAUDE.md。
+- my-git-tag 提交 CHANGELOG 改为经 my-git-commit skill。
+- 统一 mermaid 图类型选择表为单一事实来源（type-index.md），inline 小体积 reference 到 SKILL.md，清理死引用。
+- README 新增推荐插件章节、补全 settings 表与 hooks JSON 合并说明。
+
 ## 0.2.0
 
 ### Features
