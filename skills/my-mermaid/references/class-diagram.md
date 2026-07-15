@@ -24,6 +24,7 @@ classDiagram
 ```
 
 - `+` public, `-` private, `#` protected, `*` abstract
+- 泛型用 `~T~` 写法（如 `List~User~`），**不写 `<T>`**（尖括号被当 HTML 吞掉）
 - `<|--` 继承, `*--` 组合, `o--` 聚合, `-->` 关联, `<..` 实现, `..>` 依赖
 - `<<Interface>>` `<<Abstract>>` `<<Service>>` 标注
 

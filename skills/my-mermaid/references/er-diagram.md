@@ -8,8 +8,8 @@
 
 ```
 erDiagram
-  USER ||--o{ ORDER: places
-  ORDER ||--|{ ORDER_ITEM: contains
+  USER ||--o{ ORDER: "places"
+  ORDER ||--|{ ORDER_ITEM: "contains"
   PRODUCT ||--o{ ORDER_ITEM: "ordered in"
 
   USER {
@@ -33,7 +33,7 @@ erDiagram
 
 - `|` 必须一，`o` 零，`{` 多
 - 左侧描述第一个实体，右侧描述第二个实体
-- 关系标签放在 `:` 后，用简短英文描述业务语义（含空格时用双引号）
+- 关系标签放在 `:` 后，用简短英文描述业务语义（一律双引号包裹）
 - 常用标签：`places`, `contains`, `belongs to`, `references`, `logs`
 
 ## 属性

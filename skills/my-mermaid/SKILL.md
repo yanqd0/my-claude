@@ -18,7 +18,7 @@ allowed-tools: Read Write AskUserQuestion
 2. **选择图类型**：`Read` `references/type-index.md`，按选择表匹配图类型。
    - 类型明确 → 直接采用。
    - 多种类型都合理或把握不足 → 用 `AskUserQuestion`（单选）让用户选，选项列出候选类型及各自一句话适用场景。
-   确定后 `Read` 对应的 `references/<file>.md` 获取完整语法、配色和大小限制。
+   确定后 `Read` 对应的 `references/<file>.md`（完整语法、配色和大小限制），并 `Read` `references/syntax-robustness.md`（语法与显示鲁棒性，所有图类型必读）。
 3. **读取上下文**：`Read` 目标文件以准确绘图。
 4. **生成预览**：输出 mermaid 代码块供用户查看。
 5. **写入文件**：默认仅展示、不写入。用户有写入意图但未给明确路径时，用 `AskUserQuestion`（单选）确认目标，选项如"写入对话相关的 `.md`"、"写入指定路径（在 Other 填写）"、"仅展示不写入"；路径明确则直接写入。
@@ -28,7 +28,7 @@ allowed-tools: Read Write AskUserQuestion
 
 以下规范适用于所有图类型（各类型的特有限制在 reference 文件中）：
 
-- 节点 ID 用简洁英文或拼音，标签用中文。含空格时用双引号包裹，换行用 `<br/>`。
+- 节点 ID 用简洁英文或拼音（仅 `[A-Za-z0-9_]`），标签用中文并**一律双引号包裹**，换行用 `<br/>`。转义与陷阱细则见 `references/syntax-robustness.md`。
 - 标题使用 YAML frontmatter（`---\ntitle: 中文标题\n---`），不支持的渲染器用 `%% 图标题：xxx`。
 - 不生成 README 或说明文件，mermaid 代码块直接嵌入回复。
 - 使用 `classDef` 和 `class` 进行语义着色（配色方案见各 reference 文件）。

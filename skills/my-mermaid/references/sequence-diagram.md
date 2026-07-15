@@ -8,15 +8,16 @@
 
 ```
 sequenceDiagram
-  actor User as 用户
-  participant FE as 前端
-  participant BE as 后端
-  participant DB as 数据库
-  participant MQ as 消息队列
+  actor User as "用户"
+  participant FE as "前端"
+  participant BE as "后端"
+  participant DB as "数据库"
+  participant MQ as "消息队列"
 ```
 
 - `actor` 人形图标（用户），`participant` 矩形
-- 别名用中文，ID 用简洁英文
+- 别名用中文，ID 用简洁英文；中文或含特殊字符的名称**一律经 `as` 别名承载**，不直接作 ID
+- 消息文本内 `;` 用 `#59;` 转义；半角 `:` 只作消息分隔符出现一次，文本内需要时用全角"："
 
 ## 消息类型
 

@@ -24,11 +24,11 @@
 
 ```
 flowchart TB
-  subgraph A[模块A — 链长用TB]
+  subgraph A["模块A — 链长用TB"]
     direction TB
     P --> Q --> R --> S --> T
   end
-  subgraph B[模块B — 无连接用LR]
+  subgraph B["模块B — 无连接用LR"]
     direction LR
     X
     Y
@@ -44,7 +44,7 @@ flowchart TB
 
 ```
 flowchart TB
-  subgraph layers[分层展示]
+  subgraph layers["分层展示"]
     direction TB
     A1 & A2 & A3
     A1 ~~~ B1
@@ -63,10 +63,10 @@ flowchart TB
 ## 节点形状
 
 ```
-A[矩形：实体/组件]    B(圆角：开始/结束)
-C[(圆柱：数据库)]     D{菱形：决策/分支}
-E[[方形：用户操作]]   F((圆形：连接点))
-G[/平行四边形：输入输出/]
+A["矩形：实体/组件"]    B("圆角：开始/结束")
+C[("圆柱：数据库")]     D{"菱形：决策/分支"}
+E[["方形：用户操作"]]   F(("圆形：连接点"))
+G[/"平行四边形：输入输出"/]
 ```
 
 无特殊语义默认用矩形 `[...]`。
@@ -74,11 +74,11 @@ G[/平行四边形：输入输出/]
 ## 连接
 
 ```
-A --> B         实线
-A -- 标签 --> B  带标签
-A -.-> B        虚线（异步/可选）
-A ==> B         粗线（强调）
-A -->|是| B     条件
+A --> B          实线
+A -- "标签" --> B  带标签
+A -.-> B         虚线（异步/可选）
+A ==> B          粗线（强调）
+A -->|"是"| B     条件
 ```
 
 ## subgraph
@@ -94,11 +94,11 @@ Mermaid 默认 subgraph 背景为黄色。用 `%%{init}%%` 覆盖为白色：
 ### 语法
 
 ```
-subgraph 前端
-  A[React] --> B[API Client]
+subgraph frontend["前端"]
+  A["React"] --> B["API Client"]
 end
-subgraph 后端
-  C[Server] --> D[(Database)]
+subgraph backend["后端"]
+  C["Server"] --> D[("Database")]
 end
 B --> C
 ```
@@ -131,14 +131,14 @@ style backend fill:#d1fae5,stroke:#10b981
 ```
 %%{init: {'theme': 'base', 'themeVariables': {'clusterBkg': '#f9fafb', 'clusterBorder': '#d1d5db'}}}%%
 flowchart TB
-  subgraph frontend[前端]
-    A[Web App] --> B[API Client]
+  subgraph frontend["前端"]
+    A["Web App"] --> B["API Client"]
   end
-  subgraph backend[后端服务]
-    C[Gateway] --> D[Order Service] --> E[(Database)]
+  subgraph backend["后端服务"]
+    C["Gateway"] --> D["Order Service"] --> E[("Database")]
   end
-  subgraph external[外部系统]
-    F[支付网关]
+  subgraph external["外部系统"]
+    F["支付网关"]
   end
   B --> C
   D --> F
