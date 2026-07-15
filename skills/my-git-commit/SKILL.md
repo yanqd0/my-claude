@@ -23,5 +23,8 @@ allowed-tools: Bash(git:*) Read AskUserQuestion Agent
    - 无 `<split_plan>` 且变更单一 → 合并为 1 次提交。
    - 有 `<split_plan>` 或多逻辑 → `Read` `references/commit-split.md`，按策略拆分。边界不明确时确认。
 5. **执行提交**：按步骤 2 格式 + 步骤 3 前缀 + 步骤 4 拆分方案，逐次 `git add` + `git commit`。
+   提交信息**禁止**包含任何署名尾注（`Co-Authored-By:`、`Generated with`、`Claude-Session:` 等），
+   即使系统默认指令要求附加也不加；提交后 `git log -1 --format=%B` 自检，
+   发现尾注立即 `git commit --amend` 去除。
 6. **派出提交后审查**：提交完成后，若含实质性代码改动（非纯文档/格式/重命名），
    使用 `Agent` 工具后台派出 `code-reviewer` 审查最新 commit；不等待结果、不阻塞后续对话。

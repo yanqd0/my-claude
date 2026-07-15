@@ -42,7 +42,7 @@ code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外�
 
 | 文件 | 用途 |
 |------|------|
-| `default.json` | 通用偏好：权限、主题、自动记忆、遥测开关、effort 级别等 |
+| `default.json` | 通用偏好：权限、主题、自动记忆、遥测开关、effort 级别、关闭提交/PR 署名（attribution）等 |
 | `deepseek-v4.json` | DeepSeek V4 提供商：接口地址、模型映射、子 agent 模型、compact 窗口等 |
 | `spinner_verbs.json` | 自定义 spinner 加载文案 |
 | `rtk.json` | rtk（Rust Token Killer）命令的 Bash 执行权限 |

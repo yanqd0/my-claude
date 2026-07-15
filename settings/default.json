@@ -6,6 +6,11 @@
   },
   "skipWebFetchPreflight": true,
   "autoMemoryEnabled": true,
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "theme": "auto",
   "hasCompletedOnboarding": true,
   "env": {

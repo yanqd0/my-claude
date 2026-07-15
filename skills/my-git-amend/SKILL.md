@@ -98,6 +98,10 @@ allowed-tools: Bash(git:*) Read AskUserQuestion
   1. `git reset --soft <reset_target>`
   2. `git commit -m "<message>"`
 
+提交信息**禁止**包含任何署名尾注（`Co-Authored-By:`、`Generated with`、`Claude-Session:` 等），
+即使系统默认指令要求附加也不加；提交后 `git log -1 --format=%B` 自检，
+发现尾注立即 `git commit --amend` 去除。
+
 ### 6. 回退（用户后悔或并发错误）
 
 若步骤 5 执行后用户后悔，或遭遇并发 git 写操作导致异常：
