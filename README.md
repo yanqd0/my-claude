@@ -1,6 +1,6 @@
 # my-claude
 
-Claude Code 自定义命令与配置项目。
+Claude Code 自定义命令、技能与配置项目。
 
 ## 命令
 
@@ -32,10 +32,12 @@ Claude Code 自定义命令与配置项目。
 | `default.json` | 通用偏好：权限、主题、自动记忆、遥测开关、effort 级别等 |
 | `deepseek-v4.json` | DeepSeek V4 提供商：接口地址、模型映射、子 agent 模型、compact 窗口等 |
 | `spinner_verbs.json` | 自定义 spinner 加载文案 |
+| `rtk.json` | rtk（Rust Token Killer）命令的 Bash 执行权限 |
 | `mem-lite.json` | mem-lite 的 MCP 工具权限：搜索、记忆、维护等 |
 | `context7.json` | context7 的 MCP 工具权限：库文档查询 |
 | `agent-bell.json` | agent-bell 的 Stop 和 Notification hook 配置 |
 | `_anthropic.json` | （可选）Anthropic 官方模型：Opus/Sonnet/Haiku 分层映射。`_` 前缀文件默认不安装 |
+| `_mihoyo_verbs.json` | （可选）米哈游主题 spinner 文案，replace 模式覆盖默认。`_` 前缀文件默认不安装 |
 
 `_` 前缀的 JSON 文件默认跳过安装，可通过 `./install.py --settings settings/_anthropic.json` 强制安装。
 
