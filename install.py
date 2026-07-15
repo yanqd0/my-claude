@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install this project's commands and skills to Claude Code."""
+"""Install this project's commands, skills and agents to Claude Code."""
 
 import argparse
 import json
@@ -60,6 +60,11 @@ def install_commands(src_dir, dst_dir):
 def install_skills(src_dir, dst_dir):
     """Symlink skills/* into ~/.claude/skills/ (dirs and .md files)."""
     return _install_items(src_dir, dst_dir, label="skills", glob_pattern="*")
+
+
+def install_agents(src_dir, dst_dir):
+    """Symlink agents/*.md into ~/.claude/agents/."""
+    return _install_items(src_dir, dst_dir, label="agents")
 
 
 # ── settings ───────────────────────────────────────────────────────────
@@ -554,16 +559,26 @@ def _revert_skills(src_dir, dst_dir):
     return _revert_items(src_dir, dst_dir, label="skills")
 
 
-def _run_test(src_dir, skills_dir, settings_dir, hooks_dir):
+def _revert_agents(src_dir, dst_dir):
+    """Remove agent symlinks pointing to src_dir from dst_dir."""
+    return _revert_items(src_dir, dst_dir, label="agents")
+
+
+def _run_test(src_dir, skills_dir, agents_dir, settings_dir, hooks_dir):
     root = Path("/tmp/my-claude")
     dst_dir = root / "commands"
     skills_dst = root / "skills"
+    agents_dst = root / "agents"
 
     print(f"=== Install test ({dst_dir}) ===\n")
 
     installed = install_commands(src_dir, dst_dir)
     installed_sk = install_skills(skills_dir, skills_dst)
-    print(f"\nInstalled {installed} commands, {installed_sk} skills.\n")
+    installed_ag = install_agents(agents_dir, agents_dst)
+    print(
+        f"\nInstalled {installed} commands, {installed_sk} skills, "
+        f"{installed_ag} agents.\n"
+    )
 
     print("=== Validation (commands) ===")
     passed, failed = _validate(src_dir, dst_dir)
@@ -571,6 +586,11 @@ def _run_test(src_dir, skills_dir, settings_dir, hooks_dir):
     sp, sf = _validate(skills_dir, skills_dst, glob_pattern="*")
     passed += sp
     failed += sf
+    if agents_dir.is_dir():
+        print("\n=== Validation (agents) ===")
+        ap, af = _validate(agents_dir, agents_dst)
+        passed += ap
+        failed += af
 
     if settings_dir.is_dir():
         print("\n=== Settings install test ===")
@@ -694,19 +714,25 @@ def main():
     dst_dir = root / "commands"
     skills_dir = Path(__file__).resolve().parent / "skills"
     skills_dst = root / "skills"
+    agents_dir = Path(__file__).resolve().parent / "agents"
+    agents_dst = root / "agents"
     settings_dir = Path(__file__).resolve().parent / "settings"
     settings_path = root / "settings.json"
     hooks_dir = Path(__file__).resolve().parent / "hooks"
     hooks_dst = root / "hooks"
 
     if args.test:
-        _run_test(src_dir, skills_dir, settings_dir, hooks_dir)
+        _run_test(src_dir, skills_dir, agents_dir, settings_dir, hooks_dir)
     elif args.revert:
         if not args.settings and not args.hooks:
             # Full revert: everything
             removed = _revert_commands(src_dir, dst_dir)
             removed_s = _revert_skills(skills_dir, skills_dst)
-            print(f"\nDone. {removed} commands, {removed_s} skills removed.")
+            removed_a = _revert_agents(agents_dir, agents_dst)
+            print(
+                f"\nDone. {removed} commands, {removed_s} skills, "
+                f"{removed_a} agents removed."
+            )
 
             if settings_dir.is_dir():
                 print("\n=== Settings ===")
@@ -745,7 +771,11 @@ def main():
 
         installed = install_commands(src_dir, dst_dir)
         installed_s = install_skills(skills_dir, skills_dst)
-        print(f"\nDone. {installed} commands, {installed_s} skills installed.")
+        installed_a = install_agents(agents_dir, agents_dst)
+        print(
+            f"\nDone. {installed} commands, {installed_s} skills, "
+            f"{installed_a} agents installed."
+        )
 
         if settings_dir.is_dir():
             print("\n=== Settings ===")

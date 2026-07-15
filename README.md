@@ -1,6 +1,6 @@
 # my-claude
 
-Claude Code 自定义命令、技能与配置项目。
+Claude Code 自定义命令、技能、agent 与配置项目。
 
 ## 命令
 
@@ -22,6 +22,14 @@ Claude Code 自定义命令、技能与配置项目。
 | `my-git-amend` | 将修改合并到已有提交（支持指定范围：数字/SHA1/引用/自然语言），生成规范提交信息，支持 reflog 回退 |
 | `my-code-io` | 基于代码生成中文技术介绍文，含图表和多章节，面向非专业读者，可选指定输出路径 |
 | `my-changelog` | 管理 CHANGELOG.md：判断当前版本、归类整合 commit、逆序插入、合并同版本重复项，仅动当前版本 |
+
+## Agent
+
+`agents/` 下的 `.md` 文件通过 `install.py` 软链接到 `~/.claude/agents/`，作为可被 Claude 委派任务的全局 subagent。
+
+| Agent | 用途 |
+|------|------|
+| `tester` | 孤立脚本测试员：单文件 Python/Bash 脚本的既有测试运行与快速验证，只读不改；有构建系统的项目应由项目级 tester 覆盖 |
 
 ## 配置片段
 
@@ -67,7 +75,7 @@ Claude Code 自定义命令、技能与配置项目。
 ./install.py
 ```
 
-将 `commands/*.md` 软链接到 `~/.claude/commands/`，`skills/` 下内容软链接到 `~/.claude/skills/`，`settings/*.json` 和 `hooks/*.json` deep-merge 到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`。
+将 `commands/*.md` 软链接到 `~/.claude/commands/`，`skills/` 下内容软链接到 `~/.claude/skills/`，`agents/*.md` 软链接到 `~/.claude/agents/`，`settings/*.json` 和 `hooks/*.json` deep-merge 到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`。
 
 ## 卸载
 
