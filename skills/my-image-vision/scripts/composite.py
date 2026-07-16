@@ -90,7 +90,14 @@ def main():
     # 当前实现优先内存安全。
     for i, img_path in enumerate(args.images):
         with Image.open(img_path) as src:
-            src = src.convert("RGB").resize((cell_w, cell_h), Image.LANCZOS)
+            # RGBA → RGB 时用白色背景合成，避免透明区域变黑色方块
+            if src.mode == "RGBA":
+                bg = Image.new("RGB", src.size, (255, 255, 255))
+                bg.paste(src, mask=src.split()[3])
+                src = bg
+            else:
+                src = src.convert("RGB")
+            src = src.resize((cell_w, cell_h), Image.LANCZOS)
         row, col = divmod(i, cols)
         x, y = col * cell_w, row * (cell_h + label_h)
         canvas.paste(src, (x, y + label_h))

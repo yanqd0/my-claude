@@ -97,10 +97,16 @@ def main():
         img = enhancer.enhance(args.sharpen)
 
     if args.threshold is not None:
-        # 先转灰度再二值化，确保 threshold 语义一致
+        # 先转灰度再二值化。若后续还有 brightness/contrast 操作，
+        # 保留 "L" 模式（0/255 值域）以使增强有效；否则转为 1-bit。
+        has_later_tone = (
+            args.brightness is not None or args.contrast is not None
+        )
         img = img.convert("L").point(
             lambda p, t=args.threshold: 255 if p > t else 0
         )
+        if not has_later_tone:
+            img = img.convert("1")
 
     if args.invert:
         # ImageOps.invert 要求 L 或 RGB 模式

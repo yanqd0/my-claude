@@ -19,11 +19,14 @@ allowed-tools: Read Write Bash AskUserQuestion
    用 `AskUserQuestion`（单选）确认——"按此预处理并识别"（推荐）、
    "调整预处理（在 Other 描述）"、"不做预处理，直接识别"。
 3. **执行预处理**（如需）：
-   - 单图 1+ 操作：`./scripts/preprocess.py <input> --op1 ... --opN -o <output>`
-   - 单图多处预处理后需合并 → 多次 `preprocess.py` 后 `./scripts/composite.py`
-     <a> <b> ... --labels "标签1,标签2" -o <output>
+   - 单图 1+ 操作：`~/.claude/skills/my-image-vision/scripts/preprocess.py`
+     `<input> --op1 ... --opN -o <output>`
+   - 单图多处预处理后需合并 → 多次 `preprocess.py` 后
+     `~/.claude/skills/my-image-vision/scripts/composite.py`
+     `<a> <b> ... --labels "标签1,标签2" -o <output>`
    操作语法详见 `Read` `references/preprocessing.md`（条件触发，仅此步读）。
-4. **发送识图**：`./scripts/describe.py <image> [--prompt "指令"] [--max-tokens N]`。
+4. **发送识图**：`~/.claude/skills/my-image-vision/scripts/describe.py`
+   `<image> [--prompt "指令"] [--max-tokens N]`。
    脚本自动从 `~/.claude/settings.json` 读取 API key，默认走 DeepSeek Vision API。
    按退出码分支处理：
    - 退出码 **0** → stdout 为识别文本，直接进入步骤 5；

@@ -130,7 +130,13 @@ def main():
     # ── 从 settings.json 读取 API key 与 Base URL ────────────────
     settings = _load_settings()
     token = settings.get("env", {}).get("ANTHROPIC_AUTH_TOKEN", "")
-    base_url = settings.get("ANTHROPIC_BASE_URL", "")
+    # ANTHROPIC_BASE_URL 可能位于顶层（schema 标准）或 env 内（经
+    # settings.json deep-merge 时 includeGitInstructions 等同类配置的
+    # 实际路径）。两处都尝试，顶层优先。
+    base_url = (
+        settings.get("ANTHROPIC_BASE_URL")
+        or settings.get("env", {}).get("ANTHROPIC_BASE_URL", "")
+    )
 
     if not token:
         print(
