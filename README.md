@@ -23,6 +23,7 @@ Claude Code 自定义命令、技能、agent 与配置项目。
 | `my-code-io` | 基于代码生成中文技术介绍文，含图表和多章节，面向非专业读者，可选指定输出路径 |
 | `my-changelog` | 管理 CHANGELOG.md：判断当前版本、归类整合 commit、逆序插入、合并同版本重复项，仅动当前版本 |
 | `my-new-agent` | 在当前项目创建项目级 agent：内置 6 个社区角色模板（tester/debugger/ci-devops/db-specialist/performance/navigator）与职能/需求/成本收益总体评审，可自主调用 |
+| `my-image-vision` | 图片识图与预处理：压缩/剪裁/灰度/模糊等处理后调 DeepSeek V4 Vision API 返回文本描述；厂商自动检测，Anthropic 原生 fallback；支持多重处理合并为一张图 |
 
 ## Agent
 
