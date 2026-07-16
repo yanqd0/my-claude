@@ -49,6 +49,7 @@ code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外�
 | `mem-lite.json` | mem-lite 的 MCP 工具权限：搜索、记忆、维护等 |
 | `context7.json` | context7 的 MCP 工具权限：库文档查询 |
 | `agent-bell.json` | agent-bell 的 Stop 和 Notification hook 配置 |
+| `local-dev.json` | 本地开发边界：关闭 worktree 隔离（bgIsolation=none）、禁用内置 PR 工作流（includeGitInstructions=false），适配个人本地单 commit 串行开发 |
 | `_anthropic.json` | （可选）Anthropic 官方模型：Opus/Sonnet/Haiku 分层映射。`_` 前缀文件默认不安装 |
 | `_mihoyo_verbs.json` | （可选）米哈游主题 spinner 文案，replace 模式覆盖默认。`_` 前缀文件默认不安装 |
 

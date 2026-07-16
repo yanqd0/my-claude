@@ -1,0 +1,9 @@
+{
+  "worktree": {
+    "bgIsolation": "none",
+    "baseRef": "head",
+    "symlinkDirectories": [],
+    "sparsePaths": []
+  },
+  "includeGitInstructions": false
+}
