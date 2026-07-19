@@ -6,6 +6,7 @@ description: >-
   审查逻辑委托内置 code-review 技能。不做安全审计——疑似安全问题仅一行标注移交 security-auditor。
   用户显式要求大范围 review（未发布提交、全量代码）时也可调用，此时与 security-auditor 并行派出，
   主对话应提醒用户：审查期间暂停修改代码，保持工作区稳定直至报告返回。
+model: opus
 tools: Skill, Read, Grep, Glob, Bash
 skills:
   - code-review

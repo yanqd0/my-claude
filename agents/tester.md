@@ -5,6 +5,7 @@ description: >-
   运行既有测试或构造快速验证并精简报告结果。当编写或修改独立脚本、临时脚本、一次性工具脚本后，
   use proactively。在存在 CMakeLists.txt/Makefile/Cargo.toml/go.mod/package.json/pyproject.toml
   等构建系统的项目中不适用（此类项目应由项目级 tester 覆盖，本 agent 不要接手）。
+model: haiku
 tools: Read, Grep, Glob, Bash
 background: true
 color: green
