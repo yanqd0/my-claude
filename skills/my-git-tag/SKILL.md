@@ -6,7 +6,7 @@ description: >-
   也支持用户显式通过 /my-git-tag 触发。
   预发布版本（alpha/beta/rc/dev）跳过 CHANGELOG，从 git log 归类生成 tag message；
   打 tag 前校验项目配置文件（Cargo.toml/package.json/pyproject.toml 等）中的版本号一致性。
-allowed-tools: Bash(git:*,test:*) Read Edit Write Grep Skill AskUserQuestion
+allowed-tools: Bash(git:*,test:*) Read Edit Write Grep Skill AskUserQuestion Agent
 ---
 
 打 `git tag`，支持一个可选参数：`<tag_name>`。
@@ -113,7 +113,25 @@ git tag -a <version> -m "<message>"
 - 正式版本：tag 打在步骤 3 my-changelog 产生的 CHANGELOG 提交上（若无新提交则打在 HEAD）。
 - 预发布版本：tag 直接打在 HEAD。
 
-### 7. 保存摘要到项目记忆
+### 7. 派出审查 agent
+
+tag 打完后，使用 `Agent` 工具**并行**后台派出 `code-reviewer` 和 `security-auditor`，审查本版本的全部改动：
+
+```
+Agent: code-reviewer
+  subagent_type: code-reviewer
+  prompt: 审查本次版本 <version> 的改动（commit 范围：<last_tag>..HEAD，若 <last_tag> 为空则取全部历史）。
+
+Agent: security-auditor
+  subagent_type: security-auditor
+  prompt: 审计本次版本 <version> 的安全问题（commit 范围：<last_tag>..HEAD，若 <last_tag> 为空则取全部历史）。
+```
+
+- 两个 agent 并行派出、各自后台运行，审查结果以报告形式返回。
+- 若 `<last_tag>` 为空（首个版本），commit 范围改为 `HEAD` 的全部历史。
+- 此步骤不阻塞主对话——agent 报告返回后主对话自行裁决后续动作。
+
+### 8. 保存摘要到项目记忆
 
 将以下内容保存到项目记忆：
 - 版本号 `<version>`
