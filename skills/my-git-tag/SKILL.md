@@ -104,18 +104,9 @@ allowed-tools: Bash(git:*,test:*) Read Edit Write Grep Skill AskUserQuestion Age
   - 无内容的分类整体省略。
 - 输出格式与正式版本一致：首行标题 + 空行 + `## Features` / `## Bug Fixes` / `## Others`。
 
-### 6. 执行 git tag
+### 6. 派出审查 agent
 
-```bash
-git tag -a <version> -m "<message>"
-```
-
-- 正式版本：tag 打在步骤 3 my-changelog 产生的 CHANGELOG 提交上（若无新提交则打在 HEAD）。
-- 预发布版本：tag 直接打在 HEAD。
-
-### 7. 派出审查 agent
-
-tag 打完后，使用 `Agent` 工具**并行**后台派出 `code-reviewer` 和 `security-auditor`，审查本版本的全部改动：
+打 tag 前，使用 `Agent` 工具**并行**后台派出 `code-reviewer` 和 `security-auditor`，审查本版本的全部改动：
 
 ```
 Agent: code-reviewer
@@ -129,7 +120,18 @@ Agent: security-auditor
 
 - 两个 agent 并行派出、各自后台运行，审查结果以报告形式返回。
 - 若 `<last_tag>` 为空（首个版本），commit 范围改为 `HEAD` 的全部历史。
-- 此步骤不阻塞主对话——agent 报告返回后主对话自行裁决后续动作。
+- **审查未通过前不执行步骤 7**：待两份报告返回后，由主对话裁决修复方案；修复完毕后（通过 my-git-commit 或 my-git-amend 提交）再继续打 tag。
+
+### 7. 执行 git tag
+
+审查通过、修复完毕后，打 tag：
+
+```bash
+git tag -a <version> -m "<message>"
+```
+
+- 正式版本：tag 打在步骤 3 my-changelog 产生的 CHANGELOG 提交上（若无新提交则打在 HEAD）。
+- 预发布版本：tag 直接打在 HEAD。
 
 ### 8. 保存摘要到项目记忆
 
