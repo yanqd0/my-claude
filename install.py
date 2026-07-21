@@ -260,6 +260,10 @@ def install_mcp(mcp_dir, dst_path, forced=None):
                 print(f"  skip   : {src.name} (internal)")
                 continue
 
+        if not src.is_file():
+            print(f"  skip   : {src.name} (not found)")
+            continue
+
         overlay = json.loads(src.read_text())
         overlay_servers = overlay.get("mcpServers", {})
         if not overlay_servers:
@@ -791,7 +795,21 @@ def _run_test(
         if mcp_path.exists():
             merged = json.loads(mcp_path.read_text())
             servers = merged.get("mcpServers", {})
-            print(f"  ✓ mcpServers present ({len(servers)} server(s))")
+            for src in sorted(mcp_dir.glob("*.json")):
+                if src.name.startswith("_"):
+                    continue
+                expected = json.loads(src.read_text())
+                for sname, scfg in expected.get("mcpServers", {}).items():
+                    if sname not in servers:
+                        print(f"  ✗ {src.name} ({sname} missing)")
+                        failed += 1
+                        continue
+                    actual = servers[sname]
+                    if actual != scfg:
+                        print(f"  ✗ {src.name} ({sname} mismatch)")
+                        failed += 1
+                    else:
+                        print(f"  ✓ {src.name} ({sname})")
         else:
             print("  ✗ .claude.json missing")
             failed += 1
@@ -941,6 +959,16 @@ def main():
                     sys.exit(1)
                 forced.add(str(p))
 
+        # resolve --mcp paths to absolute paths for forced merge
+        mcp_forced = set()
+        if args.mcp:
+            for path_str in args.mcp:
+                p = Path(path_str).resolve()
+                if not p.is_file():
+                    print(f"MCP file not found: {p}", file=sys.stderr)
+                    sys.exit(1)
+                mcp_forced.add(str(p))
+
         installed = install_commands(src_dir, dst_dir)
         installed_s = install_skills(skills_dir, skills_dst)
         installed_a = install_agents(agents_dir, agents_dst)
@@ -963,7 +991,7 @@ def main():
 
         if mcp_dir.is_dir():
             print("\n=== MCP ===")
-            installed_m = install_mcp(mcp_dir, mcp_path, args.mcp)
+            installed_m = install_mcp(mcp_dir, mcp_path, mcp_forced)
             print(f"\nDone. {installed_m} MCP servers installed.")
 
 
