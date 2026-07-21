@@ -221,6 +221,125 @@ def _revert_settings(settings_dir, dst_path, forced=None):
     return reverted
 
 
+# ── mcp ──────────────────────────────────────────────────────────────────
+
+
+def install_mcp(mcp_dir, dst_path, forced=None):
+    """Merge mcp/*.json into dst_path under mcpServers.
+
+    Each fragment must contain an ``mcpServers`` dict keyed by server name.
+    When a server name already exists in the destination it is skipped
+    unless *forced* is truthy (non-empty set of paths).
+
+    Return count of installed servers.
+    """
+    if not mcp_dir.is_dir():
+        return 0
+
+    if forced is None:
+        forced = set()
+
+    dst_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if dst_path.exists():
+        base = json.loads(dst_path.read_text())
+    else:
+        base = {}
+
+    base.setdefault("mcpServers", {})
+
+    if forced:
+        sources = [Path(p) for p in sorted(forced)]
+    else:
+        sources = sorted(mcp_dir.glob("*.json"))
+
+    installed = 0
+    for src in sources:
+        if not forced:
+            if src.name.startswith("_"):
+                print(f"  skip   : {src.name} (internal)")
+                continue
+
+        overlay = json.loads(src.read_text())
+        overlay_servers = overlay.get("mcpServers", {})
+        if not overlay_servers:
+            print(f"  skip   : {src.name} (no mcpServers key)")
+            continue
+
+        is_forced = bool(forced)
+
+        for server_name, server_config in overlay_servers.items():
+            if server_name in base["mcpServers"] and not is_forced:
+                print(
+                    f"  skip   : {src.name} "
+                    f"({server_name} already exists)"
+                )
+                continue
+            base["mcpServers"][server_name] = server_config
+            tag = "force" if is_forced else "install"
+            print(f"  {tag}: {src.name} ({server_name})")
+            installed += 1
+
+    if installed > 0:
+        dst_path.write_text(
+            json.dumps(base, indent=2, ensure_ascii=False) + "\n"
+        )
+
+    return installed
+
+
+def _revert_mcp(mcp_dir, dst_path, forced=None):
+    """Remove mcpServers entries that were installed from mcp/*.json.
+
+    Return count of removed servers.
+    """
+    if not mcp_dir.is_dir():
+        return 0
+
+    if not dst_path.exists():
+        print(f"Config file not found: {dst_path}")
+        return 0
+
+    base = json.loads(dst_path.read_text())
+
+    if "mcpServers" not in base:
+        return 0
+
+    if forced is not None:
+        sources = [Path(p) for p in sorted(forced)]
+        sources = [s for s in sources if s.suffix == ".json"]
+    else:
+        sources = sorted(mcp_dir.glob("*.json"))
+        sources = [s for s in sources if not s.name.startswith("_")]
+
+    reverted = 0
+    for src in sources:
+        if not src.is_file():
+            continue
+        overlay = json.loads(src.read_text())
+        overlay_servers = overlay.get("mcpServers", {})
+        if not overlay_servers:
+            continue
+
+        for server_name in overlay_servers:
+            if server_name in base["mcpServers"]:
+                del base["mcpServers"][server_name]
+                print(f"  revert : {src.name} ({server_name})")
+                reverted += 1
+            else:
+                print(f"  skip   : {src.name} "
+                      f"({server_name}, not found)")
+
+    if reverted > 0:
+        if not base["mcpServers"]:
+            del base["mcpServers"]
+        dst_path.write_text(
+            json.dumps(base, indent=2, ensure_ascii=False) + "\n"
+        )
+
+    return reverted
+
+
 # ── hooks ──────────────────────────────────────────────────────────────
 
 
@@ -564,7 +683,9 @@ def _revert_agents(src_dir, dst_dir):
     return _revert_items(src_dir, dst_dir, label="agents")
 
 
-def _run_test(src_dir, skills_dir, agents_dir, settings_dir, hooks_dir):
+def _run_test(
+    src_dir, skills_dir, agents_dir, settings_dir, hooks_dir, mcp_dir
+):
     root = Path("/tmp/my-claude")
     dst_dir = root / "commands"
     skills_dst = root / "skills"
@@ -659,6 +780,36 @@ def _run_test(src_dir, skills_dir, agents_dir, settings_dir, hooks_dir):
         j, s = _revert_hooks(hooks_dir, settings_path, hooks_dst)
         print(f"\n{j} hook settings, {s} hook scripts reverted.")
 
+    if mcp_dir.is_dir():
+        mcp_path = root / ".claude.json"
+
+        print("\n=== MCP install test ===")
+        installed_m = install_mcp(mcp_dir, mcp_path)
+        print(f"\n{installed_m} MCP servers installed.\n")
+
+        print("=== MCP verify ===")
+        if mcp_path.exists():
+            merged = json.loads(mcp_path.read_text())
+            servers = merged.get("mcpServers", {})
+            print(f"  ✓ mcpServers present ({len(servers)} server(s))")
+        else:
+            print("  ✗ .claude.json missing")
+            failed += 1
+
+        print("\n=== MCP partial revert test ===")
+        json_files = sorted(mcp_dir.glob("*.json"))
+        non_internal = [f for f in json_files if not f.name.startswith("_")]
+        if non_internal:
+            target = non_internal[0]
+            reverted_m = _revert_mcp(mcp_dir, mcp_path, {str(target)})
+            print(f"\nPartial revert of {target.name}: {reverted_m} reverted.")
+            # Re-install for subsequent tests
+            install_mcp(mcp_dir, mcp_path)
+
+        print("\n=== MCP revert test ===")
+        reverted_m = _revert_mcp(mcp_dir, mcp_path)
+        print(f"\n{reverted_m} MCP servers reverted.")
+
     print(f"\nClean up {root} ...")
     shutil.rmtree(root)
 
@@ -691,6 +842,13 @@ def main():
         metavar="FILE",
         help="force-install a hook JSON file and its script (repeatable)",
     )
+    parser.add_argument(
+        "--mcp",
+        action="append",
+        default=None,
+        metavar="FILE",
+        help="force-install an MCP server JSON file (repeatable)",
+    )
     action = parser.add_mutually_exclusive_group()
     action.add_argument(
         "--test",
@@ -720,11 +878,15 @@ def main():
     settings_path = root / "settings.json"
     hooks_dir = Path(__file__).resolve().parent / "hooks"
     hooks_dst = root / "hooks"
+    mcp_dir = Path(__file__).resolve().parent / "mcp"
+    mcp_path = Path.home() / ".claude.json"
 
     if args.test:
-        _run_test(src_dir, skills_dir, agents_dir, settings_dir, hooks_dir)
+        _run_test(
+            src_dir, skills_dir, agents_dir, settings_dir, hooks_dir, mcp_dir
+        )
     elif args.revert:
-        if not args.settings and not args.hooks:
+        if not args.settings and not args.hooks and not args.mcp:
             # Full revert: everything
             removed = _revert_commands(src_dir, dst_dir)
             removed_s = _revert_skills(skills_dir, skills_dst)
@@ -743,6 +905,11 @@ def main():
                 print("\n=== Hooks ===")
                 j, s = _revert_hooks(hooks_dir, settings_path, hooks_dst)
                 print(f"\nDone. {j} hook settings, {s} hook scripts reverted.")
+
+            if mcp_dir.is_dir():
+                print("\n=== MCP ===")
+                reverted_m = _revert_mcp(mcp_dir, mcp_path)
+                print(f"\nDone. {reverted_m} MCP servers reverted.")
         else:
             # Partial revert: only specified parts, skip commands
             if args.settings:
@@ -758,6 +925,11 @@ def main():
                     hooks_dir, settings_path, hooks_dst, set(args.hooks)
                 )
                 print(f"\nDone. {j} hook settings, {s} hook scripts reverted.")
+
+            if args.mcp:
+                print("\n=== MCP ===")
+                reverted_m = _revert_mcp(mcp_dir, mcp_path, set(args.mcp))
+                print(f"\nDone. {reverted_m} MCP servers reverted.")
     else:
         # resolve --settings paths to absolute paths for forced merge
         forced = set()
@@ -788,6 +960,11 @@ def main():
                 hooks_dir, settings_path, hooks_dst, args.hooks
             )
             print(f"\nDone. {j} hook settings, {s} hook scripts installed.")
+
+        if mcp_dir.is_dir():
+            print("\n=== MCP ===")
+            installed_m = install_mcp(mcp_dir, mcp_path, args.mcp)
+            print(f"\nDone. {installed_m} MCP servers installed.")
 
 
 if __name__ == "__main__":

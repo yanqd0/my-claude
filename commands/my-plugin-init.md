@@ -13,6 +13,7 @@ description: 初始化开发环境，安装推荐的 Claude Code 插件和工具
 | 2 | `context7` | plugin | `context7@claude-plugins-official` | 拉取版本匹配的库文档，消除已废弃 API 的幻觉 | — |
 | 3 | `explanatory-output-style` | plugin | `explanatory-output-style@claude-plugins-official` | 教育式解释实现选择，输出附带设计决策说明 | — |
 | 4 | `agent-bell` | npm | `which agent-bell` | 多平台桌面通知与音效：Stop/Notification 事件触发，冷却防轰炸，tmux 兼容 | Node.js >= 18 |
+| 5 | `codebase-memory-mcp` | shell | `which codebase-memory-mcp` | 代码知识图谱：tree-sitter AST 索引 158 种语言，毫秒级结构查询 | — |
 
 > 官方插件（context7、explanatory-output-style 等）无需 marketplace add，直接 `install`。
 
@@ -67,6 +68,20 @@ npm install -g agent-bell && npx agent-bell init
 ```
 
 `init` 向导自动检测 Claude Code 并配置 Stop + Notification hook，支持多套音效主题、可配置冷却和升级提示。配置文件在 `~/.agent-bell/config.json`。
+
+### 5. codebase-memory-mcp
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash -- --skip-config
+```
+
+`--skip-config` 跳过自动代理配置（MCP server 定义和权限已由本项目的 `install.py` 管理），仅安装二进制。安装后执行一次性配置：
+
+```bash
+codebase-memory-mcp config set auto_index true
+```
+
+此后打开项目即自动索引，无需手动触发。`auto_watch`（默认 `true`）持续监听 git 变更增量更新。
 
 ---
 

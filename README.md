@@ -49,12 +49,56 @@ code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外�
 | `rtk.json` | rtk（Rust Token Killer）命令的 Bash 执行权限 |
 | `mem-lite.json` | mem-lite 的 MCP 工具权限：搜索、记忆、维护等 |
 | `context7.json` | context7 的 MCP 工具权限：库文档查询 |
+| `codebase-memory.json` | codebase-memory-mcp 的 MCP 工具权限：代码图谱索引与查询（14 个工具） |
 | `agent-bell.json` | agent-bell 的 Stop 和 Notification hook 配置 |
 | `local-dev.json` | 本地开发边界：关闭 worktree 隔离（bgIsolation=none）、禁用内置 PR 工作流（includeGitInstructions=false），适配个人本地单 commit 串行开发 |
 | `_anthropic.json` | （可选）Anthropic 官方模型：Opus/Sonnet/Haiku 分层映射。`_` 前缀文件默认不安装 |
 | `_mihoyo_verbs.json` | （可选）米哈游主题 spinner 文案，replace 模式覆盖默认。`_` 前缀文件默认不安装 |
 
 `_` 前缀的 JSON 文件默认跳过安装，可通过 `./install.py --settings settings/_anthropic.json` 强制安装。
+
+### `mcp/` — MCP Server 定义片段
+
+`mcp/` 下的 JSON 文件在安装时 deep-merge 到 `~/.claude.json` 的 `mcpServers` 字段。与 `settings/` 配合：前者定义"启动哪个 server"，后者声明"允许用哪些工具"。每个文件定义一个 server，`_` 前缀默认跳过。
+
+| 文件 | 用途 |
+|------|------|
+| `codebase-memory.json` | codebase-memory-mcp：158 语言代码知识图谱，含 `CBM_LOG_LEVEL=warn`、`CBM_WORKERS=8` 等调优 |
+
+#### 增强配置
+
+**env 字段**（已内置在 fragment 中）：
+
+| 变量 | 当前值 | 说明 |
+|------|--------|------|
+| `CBM_LOG_LEVEL` | `warn` | 日志级别，减少噪音（默认 `info`） |
+| `CBM_WORKERS` | `8` | 并行索引线程数，范围 1–256（默认自动检测） |
+
+**可选追加**（编辑 fragment 的 `env`，按需添加）：
+
+| 变量 | 说明 |
+|------|------|
+| `CBM_MEM_BUDGET_MB` | 内存图谱上限（MiB），超限写磁盘。默认 `ram_fraction × RAM` |
+| `CBM_CACHE_DIR` | 数据库目录，默认 `~/.cache/codebase-memory-mcp` |
+| `CBM_DIAGNOSTICS` | 设为 `1` 启用诊断输出到 `/tmp/cbm-diagnostics-<pid>.ndjson` |
+| `CBM_ALLOWED_ROOT` | 限制索引范围到指定目录内 |
+| `CBM_DUMP_VERIFY_MIN_RATIO` | 索引后完整性校验阈值，默认 `0.5`，`0` 禁用 |
+
+**一次性配置**（安装后执行，持久化到 `~/.cache/codebase-memory-mcp/`）：
+
+```bash
+codebase-memory-mcp config set auto_index true       # 打开项目时自动索引
+codebase-memory-mcp config set auto_index_limit 50000 # 自动索引文件数上限
+codebase-memory-mcp config set auto_watch true        # 启用后台 git 变更监听（默认开启）
+```
+
+**项目级文件**（放在项目根目录）：
+
+| 文件 | 用途 |
+|------|------|
+| `.codebase-memory.json` | 扩展名→语言映射（如 `{".blade.php": "php"}`） |
+| `.cbmignore` | 排除文件（gitignore 语法，优先级低于 `.gitignore`） |
+| `.codebase-memory/graph.db.zst` | 团队共享图谱快照，免重复索引 |
 
 `hooks/` 下可放置 hook 的 JSON 配置和脚本，安装时 JSON 合并到 settings.json，脚本软链接到 `~/.claude/hooks/`。
 
@@ -75,6 +119,29 @@ code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外�
 | `context7` | 官方插件 | 拉取版本匹配的库文档，消除已废弃 API 的幻觉 |
 | `explanatory-output-style` | 官方插件 | 教育式解释实现选择，输出附带设计决策说明 |
 | `agent-bell` | npm | 桌面通知与音效：Stop/Notification 事件触发，冷却防轰炸 |
+| `codebase-memory-mcp` | shell | 代码知识图谱：tree-sitter AST 索引 158 种语言，毫秒级结构查询，节省 99% token。配置见 `mcp/codebase-memory.json` |
+
+### 新机器初始化清单
+
+全新机器上，按顺序执行：
+
+```sh
+# 1. 安装本项目
+./install.py
+
+# 2. 安装推荐插件（一键检测 + 多选安装）
+/my-plugin-init
+
+# 3. 安装 codebase-memory-mcp 二进制（/my-plugin-init 可选勾选）
+curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash -- --skip-config
+
+# 4. 开启自动索引（binary 安装后执行一次，持久化）
+codebase-memory-mcp config set auto_index true
+
+# 5. 重启 Claude Code
+```
+
+> `--skip-config` 避免 binary 自带的 `install` 与 `install.py` 的 MCP 配置冲突——server 定义和权限已由本项目管理，binary 只负责安装自身。
 
 ## 安装
 
@@ -82,7 +149,7 @@ code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外�
 ./install.py
 ```
 
-将 `commands/*.md` 软链接到 `~/.claude/commands/`，`skills/` 下内容软链接到 `~/.claude/skills/`，`agents/*.md` 软链接到 `~/.claude/agents/`，`settings/*.json` 和 `hooks/*.json` deep-merge 到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`。
+将 `commands/*.md` 软链接到 `~/.claude/commands/`，`skills/` 下内容软链接到 `~/.claude/skills/`，`agents/*.md` 软链接到 `~/.claude/agents/`，`settings/*.json` 和 `hooks/*.json` deep-merge 到 `~/.claude/settings.json`，`hooks/` 下脚本软链接到 `~/.claude/hooks/`，`mcp/*.json` deep-merge 到 `~/.claude.json` 的 `mcpServers` 字段。
 
 ## 卸载
 
@@ -90,7 +157,7 @@ code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外�
 ./install.py --revert
 ```
 
-删除指向本仓库的软链接，移除 settings.json 中由本项目添加的配置项。
+删除指向本仓库的软链接，移除 settings.json 和 ~/.claude.json 中由本项目添加的配置项。
 
 ## 其他选项
 
@@ -98,5 +165,6 @@ code-reviewer 由 `my-git-commit` 在提交后自动派出；在 Claude 之外�
 ./install.py --root /custom/path          # 自定义目标根目录
 ./install.py --settings path/to/file.json # 强制安装指定 settings 文件
 ./install.py --hooks path/to/hook.json    # 强制安装指定 hook
+./install.py --mcp path/to/server.json    # 强制安装指定 MCP server
 ./install.py --test                       # 安装到 /tmp 并校验，测试后自动清理
 ```
