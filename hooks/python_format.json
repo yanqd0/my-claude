@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/python_format.py"
+            "command": "~/.claude/hooks/python_format.py"
           }
         ]
       }

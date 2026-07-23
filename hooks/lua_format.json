@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/lua_format.py"
+            "command": "~/.claude/hooks/lua_format.py"
           }
         ]
       }
