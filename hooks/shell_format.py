@@ -2,20 +2,18 @@
 """Hook: auto-format shell scripts after Write/Edit with shfmt."""
 import json
 import os
+import shutil
 import subprocess
 import sys
 
 SHELL_EXTS = {".sh", ".bash", ".zsh"}
 
 
-def find_shfmt():
-    """Return True if shfmt is available."""
-    return subprocess.run(["which", "shfmt"], capture_output=True,
-                          check=False).returncode == 0
-
-
 def main():
-    event = json.load(sys.stdin)
+    try:
+        event = json.load(sys.stdin)
+    except json.JSONDecodeError:
+        return
     tool_name = event.get("tool_name", "")
 
     if tool_name not in ("Write", "Edit"):
@@ -28,7 +26,7 @@ def main():
     if not os.path.isfile(file_path):
         return
 
-    if not find_shfmt():
+    if not shutil.which("shfmt"):
         print(
             f"[shell-format] shfmt 未安装，跳过格式化: {file_path}",
             file=sys.stderr,

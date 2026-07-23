@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 def main():
@@ -11,22 +12,25 @@ def main():
 
     1. 从 stdin 读取 hook 事件 JSON。
     2. 过滤：仅处理工具名称为 Write 或 Edit 的事件。
-    3. 过滤：仅处理路径包含 agents/ 且以 .md 结尾的文件。
+    3. 过滤：仅处理路径中 agents/ 为目录组件且以 .md 结尾的文件。
     4. 调用同目录 validate-agent.sh 执行校验。
     5. 透传退出码和输出。
     """
-    event = json.load(sys.stdin)
+    try:
+        event = json.load(sys.stdin)
+    except json.JSONDecodeError:
+        return
+
     tool_name = event.get("tool_name", "")
 
     if tool_name not in ("Write", "Edit"):
         return
 
     file_path = event.get("tool_input", {}).get("file_path", "")
-    if not file_path or "agents/" not in file_path or not file_path.endswith(
-        ".md"
-    ):
+    if not file_path or not file_path.endswith(".md"):
         return
-
+    if "agents" not in Path(file_path).parent.name:
+        return
     if not os.path.isfile(file_path):
         return
 

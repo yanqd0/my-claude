@@ -137,7 +137,7 @@ else
 fi
 
 # Check model field
-MODEL=$(echo "$FRONTMATTER" | grep '^model:' | sed 's/model: *//')
+MODEL=$(echo "$FRONTMATTER" | grep '^model:' | sed 's/model: *//' | sed 's/^"\(.*\)"$/\1/')
 
 if [ -z "$MODEL" ]; then
     echo "❌ Missing required field: model"
@@ -157,7 +157,7 @@ else
 fi
 
 # Check color field
-COLOR=$(echo "$FRONTMATTER" | grep '^color:' | sed 's/color: *//')
+COLOR=$(echo "$FRONTMATTER" | grep '^color:' | sed 's/color: *//' | sed 's/^"\(.*\)"$/\1/')
 
 if [ -z "$COLOR" ]; then
     echo "❌ Missing required field: color"

@@ -2,21 +2,9 @@
 """Hook: auto-format Python files after Write/Edit with yapf or black."""
 import json
 import os
+import shutil
 import subprocess
 import sys
-
-
-def find_formatter():
-    """Return the first available Python formatter command, or None."""
-    for cmd in (["yapf", "-i"], ["black"]):
-        proc = subprocess.run(
-            ["which", cmd[0]],
-            capture_output=True,
-            check=False,
-        )
-        if proc.returncode == 0:
-            return cmd
-    return None
 
 
 def main():
@@ -28,7 +16,10 @@ def main():
     4. 查找可用格式化工具（yapf 优先，其次 black）。
     5. 执行格式化，输出结果或错误信息到 stderr。
     """
-    event = json.load(sys.stdin)
+    try:
+        event = json.load(sys.stdin)
+    except json.JSONDecodeError:
+        return
     tool_name = event.get("tool_name", "")
 
     # Only act on Write / Edit
@@ -43,7 +34,11 @@ def main():
     if not os.path.isfile(file_path):
         return
 
-    formatter = find_formatter()
+    formatter = None
+    for cmd in (["yapf", "-i"], ["black"]):
+        if shutil.which(cmd[0]):
+            formatter = cmd
+            break
     if formatter is None:
         print(
             f"[python-format] yapf 和 black 均未安装，"

@@ -2,21 +2,16 @@
 """Hook: auto-format Lua files after Write/Edit with stylua."""
 import json
 import os
+import shutil
 import subprocess
 import sys
 
 
-def find_stylua():
-    """Return True if stylua is available."""
-    return subprocess.run(
-        ["which", "stylua"],
-        capture_output=True,
-        check=False,
-    ).returncode == 0
-
-
 def main():
-    event = json.load(sys.stdin)
+    try:
+        event = json.load(sys.stdin)
+    except json.JSONDecodeError:
+        return
     tool_name = event.get("tool_name", "")
 
     if tool_name not in ("Write", "Edit"):
@@ -28,7 +23,7 @@ def main():
     if not os.path.isfile(file_path):
         return
 
-    if not find_stylua():
+    if not shutil.which("stylua"):
         print(
             f"[lua-format] stylua 未安装，跳过格式化: {file_path}",
             file=sys.stderr,
