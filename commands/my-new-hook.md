@@ -37,7 +37,7 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
              "hooks": [
                {
                  "type": "command",
-                 "command": "python3 <path/to/<name>.py>"
+                 "command": "~/.claude/hooks/<name>.py"
                }
              ]
            }
@@ -46,7 +46,7 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
      }
      ```
      若需要限定工具类型，在 matcher 中填写工具名或模式；否则留空。若需要多个 hook 动作，在 `hooks` 数组中追加即可。
-   - **hook 脚本**：默认使用 Python 3，从 stdin 读取 Claude Code 传入的 JSON 事件数据。若用户提供了现成脚本文件，直接复制使用。
+   - **hook 脚本**：默认使用 Python 3，从 stdin 读取 Claude Code 传入的 JSON 事件数据。脚本**必须**在首行写明 shebang，写入后执行 `chmod +x`。若用户提供了现成脚本文件，检查并补全 shebang 后直接复制使用。
 4. 交互确认：将 JSON 片段和 Python 脚本内容完整展示，用 `AskUserQuestion`（单选）确认，选项如"写入"、"修改后再写入（在 Other 描述改动）"；选择修改则按反馈迭代后重新确认。
 5. 写入文件：
    - **默认模式**（非本项目）：直接操作 `~/.claude/`。
@@ -59,7 +59,20 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
 
 ## 格式规范
 
-- hook 动作通过 `hooks` 数组定义，每项包含 `type`（固定为 `"command"`）和 `command`（要执行的命令）。`command` 值：默认模式下用 `python3 ~/.claude/hooks/<name>.py`；项目模式下同样指向 `python3 ~/.claude/hooks/<name>.py`（因为 `install.py` 会将项目 `hooks/<name>.py` 软链接到 `~/.claude/hooks/<name>.py`，使用时脚本一定在该路径下）。
+- hook 动作通过 `hooks` 数组定义，每项包含 `type`（固定为 `"command"`）和 `command`（要执行的命令）。`command` 值直接指向脚本路径（如 `~/.claude/hooks/<name>.py`），依赖脚本 shebang 执行，**不写** `python3` 前缀。项目模式下路径同理——`install.py` 会将 `hooks/<name>.py` 软链接到 `~/.claude/hooks/<name>.py`，使用时脚本一定在该路径下。
+- **shebang 与依赖管理**：脚本**必须**在首行写明 shebang，写入后执行 `chmod +x` 确保可执行。
+  - **简单脚本**（仅 Python 标准库 + 系统 CLI 工具依赖）：使用 `#!/usr/bin/env python3`。现有 hooks 均为此模式。
+  - **复杂脚本**（需要第三方 Python 包）：使用 `#!/usr/bin/env -S uv run`，并通过 PEP 723 内联元数据（`# /// script` … `# ///`）在脚本头部声明依赖，无需额外 `requirements.txt`。例：
+    ```python
+    #!/usr/bin/env -S uv run
+    # /// script
+    # requires-python = ">=3.12"
+    # dependencies = ["httpx>=1.0", "rich"]
+    # ///
+    import httpx, rich, sys, json
+    ...
+    ```
+  - Hook JSON 中的 `command` 无需感知脚本是 `python3` 还是 `uv run`——两者均由 shebang 自动处理。
 - 脚本的 `matcher` 为空字符串时匹配所有触发，填写工具名或正则时仅匹配符合条件的。
 - 多个 hook 配置可合并写入同一个 event 数组。
 - hook 名称（`<name>`）使用小写字母、数字和下划线（`_`），不使用中划线（`-`）。与目标语言命名习惯保持一致（如 Python 用 `python_format` 而非 `python-format`）。
