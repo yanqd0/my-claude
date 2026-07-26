@@ -17,6 +17,25 @@ allowed-tools: Bash(git:*,test:*) Read Edit Write Grep Skill AskUserQuestion Age
 
 `Read` `~/.claude/skills/my-changelog/references/next-version.md`，按其流程解析或推算版本号 — 提供 `<tag_name>` 则采用并校验格式，为空则自动推算下一个版本号；对用户非空输入做了调整（如修正格式）时须先用 `AskUserQuestion` 请用户确认。记录输出的 `<version>`、`<last_tag>`、`<is_prerelease>`。
 
+若 `<is_prerelease>` 为 `true`（预发布版本），跳过以下推算，直接进入步骤 2。
+
+若 `<is_prerelease>` 为 `false`（正式版本），推算并确认下一开发版本：
+
+1. `Read` `references/next-dev-version.md`，按其规则从 `<version>` 推算 `<next_dev_version>`（semver 格式，如 `0.6.0-alpha.1`）。
+2. 检测项目类型（同步骤 4a 逻辑——用 `test -f` 检查全部标记文件，记录命中的类型。步骤 4 将复用此结果，无需重复检测）：
+   - 全部未命中（无法识别项目类型）→ 记为 `<skip_config_update>` = true。
+   - 命中一种或多种 → 记录项目类型。若命中多种，用 `AskUserQuestion`（单选）让用户选择，选项仅列出命中的类型。
+3. 按项目类型加载对应的 `version-check-*.md` reference，检查是否为动态版本方案（同步骤 4c.1 逻辑）：
+   - 是动态版本（如 setuptools-scm、git-commit-id-plugin、semantic-release）→ 记为 `<skip_config_update>` = true。
+   - 否 → 记录 `<skip_config_update>` = false。
+4. 根据项目类型将 `<next_dev_version>` 转换为 `<next_dev_version_config>`（参照 `next-dev-version.md` 中的项目特定格式转换表）。
+5. 用 `AskUserQuestion`（单选）同时确认：
+   - "确认：正式版本 `<version>`，下一开发版本 `<next_dev_version>`（推荐）" — 若 `<skip_config_update>` 为 true，附加"`（项目无需手动更新配置文件）`"。
+   - "修改正式版本（在 Other 填写）"
+   - "修改下一开发版本（在 Other 填写）"
+   - "取消"
+6. 若用户修改了版本号，刷新对应变量；若修改了正式版本，需重新推算下一开发版并再次确认。
+
 ### 2. 识别预发布版本
 
 根据 `<is_prerelease>` 标识：
@@ -104,23 +123,26 @@ allowed-tools: Bash(git:*,test:*) Read Edit Write Grep Skill AskUserQuestion Age
   - 无内容的分类整体省略。
 - 输出格式与正式版本一致：首行标题 + 空行 + `## Features` / `## Bug Fixes` / `## Others`。
 
-### 6. 派出审查 agent
+### 6. 派出审查与测试 agent
 
-打 tag 前，使用 `Agent` 工具**并行**后台派出 `code-reviewer` 和 `security-auditor`，审查本版本的全部改动：
+打 tag 前，使用 `Agent` 工具**并行**后台派出以下 agent：
 
 ```
 Agent: code-reviewer
   subagent_type: code-reviewer
-  prompt: 审查本次版本 <version> 的改动（commit 范围：<last_tag>..HEAD，若 <last_tag> 为空则取全部历史）。
+  prompt: 审查项目全量代码（非差分），本次即将发布 <version>。
 
 Agent: security-auditor
   subagent_type: security-auditor
-  prompt: 审计本次版本 <version> 的安全问题（commit 范围：<last_tag>..HEAD，若 <last_tag> 为空则取全部历史）。
+  prompt: 审计项目全量代码（非差分），本次即将发布 <version>。
+
+Agent: tester（尽力触发——若目标项目存在项目级 tester agent 定义则派出，否则跳过）
+  subagent_type: tester
+  prompt: 对项目全量代码运行完整测试，本次即将发布 <version>。
 ```
 
-- 两个 agent 并行派出、各自后台运行，审查结果以报告形式返回。
-- 若 `<last_tag>` 为空（首个版本），commit 范围改为 `HEAD` 的全部历史。
-- **审查未通过前不执行步骤 7**：待两份报告返回后，由主对话裁决修复方案；修复完毕后（通过 my-git-commit 或 my-git-amend 提交）再继续打 tag。
+- 三个 agent 并行派出、各自后台运行。tester 若项目无定义或检测到不适用场景则自动退出，主对话不阻塞。
+- **审查未通过前不执行步骤 7**：待所有报告返回后，由主对话裁决修复方案；修复完毕后（通过 my-git-commit 或 my-git-amend 提交）再继续打 tag。
 
 ### 7. 执行 git tag
 
@@ -133,7 +155,24 @@ git tag -a <version> -m "<message>"
 - 正式版本：tag 打在步骤 3 my-changelog 产生的 CHANGELOG 提交上（若无新提交则打在 HEAD）。
 - 预发布版本：tag 直接打在 HEAD。
 
-### 8. 保存摘要到项目记忆
+### 8. 更新项目配置文件为下一开发版本
+
+仅 `<is_prerelease>` 为 `false` 时执行；预发布版本跳过本步。
+
+1. **跳过条件检查**：
+   - `<skip_config_update>` = true（动态版本或无法识别项目类型）→ 告知用户原因，直接到步骤 9。
+   - 步骤 1 中用户自定义了 `<next_dev_version>` → 直接采用用户值，仅做格式转换。
+2. **更新配置文件**：按步骤 4 检测到的项目类型，参照对应 `version-check-*.md` 中的修复方法，用 `Edit` 将版本字段替换为 `<next_dev_version_config>`：
+   - Rust：`Cargo.toml` 中 `[package]` 下的 `version = "..."`
+   - npm：`package.json` 中 `"version"` 字段
+   - Python：`pyproject.toml` 中 PEP 621 `/` Poetry 或 `setup.cfg` `/` `setup.py`
+   - Java：`pom.xml` `<version>` 或 `build.gradle[.kts]` `version=`，若原版本含 `-SNAPSHOT` 则保留后缀
+3. **提交**：直接 `git add` + `git commit`（不用 `my-git-commit`，确保提交信息确定可预测）：
+   ```
+   chore: bump version to <next_dev_version_config> for next development cycle
+   ```
+
+### 9. 保存摘要到项目记忆
 
 将以下内容保存到项目记忆：
 - 版本号 `<version>`
@@ -141,3 +180,5 @@ git tag -a <version> -m "<message>"
 - 版本类型（Rust/Python/npm/Java/无）
 - 版本一致性检查结果（一致/已修复/跳过/忽略差异）
 - tag message 摘要（概括性标题）
+- 下一开发版本 `<next_dev_version>`（如适用）
+- 下一开发版本更新结果（已更新/跳过-动态版本/跳过-预发布/跳过-未知类型）
