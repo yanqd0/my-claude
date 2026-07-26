@@ -27,7 +27,7 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
    - 若用户提供的 event 在支持列表中，直接使用。
    - 若 event 参数为空或不在支持列表中，根据 `<description_or_script>` 的内容推测最匹配的事件，用 `AskUserQuestion`（单选）列出候选事件让用户选定：推荐项置首并在 label 标注（推荐），description 写明理由。
 3. 生成内容：
-   - **hook JSON**：格式如下（标准 Claude Code hooks 配置）：
+   - **hook JSON**：格式如下，`command` 值按安装目标选择不同路径（**全局** vs **项目级**）：
      ```json
      {
        "hooks": {
@@ -45,7 +45,7 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
        }
      }
      ```
-     若需要限定工具类型，在 matcher 中填写工具名或模式；否则留空。若需要多个 hook 动作，在 `hooks` 数组中追加即可。
+     项目级 hook 将 `command` 替换为 `"${CLAUDE_PROJECT_DIR}/.claude/hooks/<name>.py"`。Claude Code 运行时自动解析 `${CLAUDE_PROJECT_DIR}` 为项目根路径，确保无论从哪个子目录触发都能找到脚本。绝对不要写死为项目绝对路径或相对路径。若需要限定工具类型，在 matcher 中填写工具名或模式；否则留空。若需要多个 hook 动作，在 `hooks` 数组中追加即可。
    - **hook 脚本**：默认使用 Python 3，从 stdin 读取 Claude Code 传入的 JSON 事件数据。脚本**必须**在首行写明 shebang，写入后执行 `chmod +x`。若用户提供了现成脚本文件，检查并补全 shebang 后直接复制使用。
 4. 交互确认：将 JSON 片段和 Python 脚本内容完整展示，用 `AskUserQuestion`（单选）确认，选项如"写入"、"修改后再写入（在 Other 描述改动）"；选择修改则按反馈迭代后重新确认。
 5. 写入文件：
@@ -56,10 +56,13 @@ description: 新增 Claude Code hook，支持直接操作 ~/.claude 或在项目
      - JSON 片段：写入 `hooks/<name>.json`。
      - 脚本：写入 `hooks/<name>.py`，执行 `chmod +x`。
      写入完成后，执行 `./install.py --hooks hooks/<name>.json` 完成安装，并同步更新 `README.md`。
+     若项目不使用 `install.py` 而是直接写 `.claude/settings.json`，则 JSON 写入 `.claude/settings.json`（deep-merge），脚本写入 `.claude/hooks/<name>.py`，`command` 使用 `${CLAUDE_PROJECT_DIR}/.claude/hooks/<name>.py`。
 
 ## 格式规范
 
-- hook 动作通过 `hooks` 数组定义，每项包含 `type`（固定为 `"command"`）和 `command`（要执行的命令）。`command` 值直接指向脚本路径（如 `~/.claude/hooks/<name>.py`），依赖脚本 shebang 执行，**不写** `python3` 前缀。项目模式下路径同理——`install.py` 会将 `hooks/<name>.py` 软链接到 `~/.claude/hooks/<name>.py`，使用时脚本一定在该路径下。
+- hook 动作通过 `hooks` 数组定义，每项包含 `type`（固定为 `"command"`）和 `command`（要执行的命令）。`command` 值直接指向脚本路径，依赖脚本 shebang 执行，**不写** `python3` 前缀。路径选择取决于安装目标：
+  - **全局 hook**（安装到 `~/.claude/`）：`command` 用 `~/.claude/hooks/<name>.py`，脚本位于 `~/.claude/hooks/`。
+  - **项目级 hook**（安装到项目目录）：`command` **必须**用 `${CLAUDE_PROJECT_DIR}/.claude/hooks/<name>.py`。Claude Code 运行时自动解析该变量为项目根路径，避免因子目录 `cwd` 不同导致找不到脚本。绝对不要写死为项目绝对路径（如 `/home/user/project/...`）或相对路径（如 `./.claude/hooks/...`），这些在克隆/移动项目后会失效。
 - **shebang 与依赖管理**：脚本**必须**在首行写明 shebang，写入后执行 `chmod +x` 确保可执行。
   - **简单脚本**（仅 Python 标准库 + 系统 CLI 工具依赖）：使用 `#!/usr/bin/env python3`。现有 hooks 均为此模式。
   - **复杂脚本**（需要第三方 Python 包）：使用 `#!/usr/bin/env -S uv run`，并通过 PEP 723 内联元数据（`# /// script` … `# ///`）在脚本头部声明依赖，无需额外 `requirements.txt`。例：
