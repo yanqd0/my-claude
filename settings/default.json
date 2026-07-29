@@ -5,6 +5,7 @@
     ]
   },
   "skipWebFetchPreflight": true,
+  "disableAgentView": true,
   "autoMemoryEnabled": true,
   "attribution": {
     "commit": "",
