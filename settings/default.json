@@ -5,6 +5,7 @@
     ]
   },
   "skipWebFetchPreflight": true,
+  "tui": "fullscreen",
   "disableAgentView": true,
   "autoMemoryEnabled": true,
   "attribution": {
