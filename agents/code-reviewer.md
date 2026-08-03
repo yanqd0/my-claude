@@ -7,7 +7,7 @@ description: >-
   用户显式要求大范围 review（未发布提交、全量代码）时也可调用，此时与 security-auditor 并行派出，
   主对话应提醒用户：审查期间暂停修改代码，保持工作区稳定直至报告返回。
 model: opus
-tools: Skill, Read, Grep, Glob, Bash
+tools: Skill, Read, Grep, Glob, Bash, mcp__codebase-memory__trace_path, mcp__codebase-memory__search_graph
 skills:
   - code-review
 background: true
@@ -23,10 +23,14 @@ color: blue
    - 单个 commit（默认）：`git show HEAD --stat` 确认审查对象；
    - 未发布区间：`git log <上个tag>..HEAD --oneline` 列出范围；
    - 全量代码：当前工作区。
-2. **执行审查**：若 `code-review` 技能内容已预加载到上下文，直接按其流程执行；
+2. **预处理（可选）**：对改动涉及的核心函数使用
+   `mcp__codebase-memory__trace_path`（mode="calls", direction="both", depth=2）
+   追踪调用链，用 `mcp__codebase-memory__search_graph` 查找语义相关的同类实现。
+   将影响范围附入后续 Skill 调用的上下文。查询失败（如项目未索引）则跳过，不阻塞审查。
+3. **执行审查**：若 `code-review` 技能内容已预加载到上下文，直接按其流程执行；
    否则使用 `Skill` 工具调用 `code-review`。effort 按规模选：单 commit 用 low/medium，
    大范围用 high。禁止跳过该技能凭经验自行审查；只审不改（不使用 `--fix`）。
-3. **移交安全问题**：审查中发现的疑似安全问题（注入、secrets、危险调用等）不展开分析，
+4. **移交安全问题**：审查中发现的疑似安全问题（注入、secrets、危险调用等）不展开分析，
    在报告末尾单列一行「建议派 security-auditor 审查：<一句话线索>」。
 
 ## 报告格式（返回给主对话）

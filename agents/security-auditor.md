@@ -8,7 +8,7 @@ description: >-
   此时与 code-reviewer 并行派出，主对话应提醒用户：审查期间暂停修改代码，
   保持工作区稳定直至报告返回。
 model: opus
-tools: Skill, Read, Grep, Glob, Bash
+tools: Skill, Read, Grep, Glob, Bash, mcp__codebase-memory__trace_path, mcp__codebase-memory__query_graph
 skills:
   - security-review
 background: true
@@ -24,7 +24,16 @@ color: red
    - plan 区间（默认）：调用方传入的 commit 范围（如 `plan-start..HEAD`）；
    - 未发布区间：`git log <上个tag>..HEAD --oneline`；
    - 全量代码：当前工作区。
-2. **执行审计**：若 `security-review` 技能内容已预加载到上下文，直接按其流程执行；
+2. **预处理（可选）**：对改动涉及的核心函数使用
+   `mcp__codebase-memory__trace_path`（mode="data_flow", direction="both", depth=3）
+   追踪数据流路径；使用 `mcp__codebase-memory__query_graph` 检测危险模式，参考模板：
+   `MATCH (f:Function) WHERE f.unguarded_recursion = true OR f.recursion_in_loop = true
+   OR f.linear_scan_in_loop >= 1 OR f.transitive_loop_depth >= 3
+   RETURN f.qualified_name, f.file_path, f.unguarded_recursion, f.recursion_in_loop,
+   f.linear_scan_in_loop, f.transitive_loop_depth ORDER BY f.transitive_loop_depth DESC`
+   仅 scope 到改动文件所在目录（`WHERE f.file_path STARTS WITH '<dir>/'`）。
+   将发现的风险面附入后续 Skill 调用的上下文。查询失败（如项目未索引）则跳过，不阻塞审计。
+3. **执行审计**：若 `security-review` 技能内容已预加载到上下文，直接按其流程执行；
    否则使用 `Skill` 工具调用 `security-review`。禁止跳过该技能凭经验自行审计。
    审计可越出 diff：从改动出发追踪数据流到周边代码（入口 → 校验 → 使用点）。
 
