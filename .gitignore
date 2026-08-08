@@ -211,3 +211,8 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+### Claude Code ###
+.claude/*
+!.claude/rules
+!.claude/settings.json
